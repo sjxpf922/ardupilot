@@ -800,7 +800,6 @@ void Plane::set_servos(void)
 
     // run output mixer and send values to the hal for output
     servos_output();
-    plane.testuart.senddata(1);
 }
 
 

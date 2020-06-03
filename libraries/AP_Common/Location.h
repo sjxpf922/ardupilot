@@ -6,6 +6,7 @@ class AP_Terrain;
 
 #define LOCATION_ALT_MAX_M  83000   // maximum altitude (in meters) that can be fit into Location structure's alt field
 
+//公共的数据接口
 class Location
 {
 public:

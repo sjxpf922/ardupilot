@@ -41,11 +41,11 @@ private:
     bool parse(uint8_t temp);
     bool process_message();
     uint32_t CRC32Value(uint32_t icrc);
-    uint32_t CalculateBlockCRC32(uint32_t length, uint8_t *buffer, uint32_t crc);
+    uint32_t CalculateBlockCRC32(uint32_t length, uint8_t *buffer, uint32_t crc); //计算校验和与收的的数据的和进行比较
 
-    static const uint8_t NOVA_PREAMBLE1 = 0xaa;
-    static const uint8_t NOVA_PREAMBLE2 = 0x44;
-    static const uint8_t NOVA_PREAMBLE3 = 0x12;
+    static const uint8_t NOVA_PREAMBLE1 = 0xaa;  //数据帧头 1
+    static const uint8_t NOVA_PREAMBLE2 = 0x44;    //2
+    static const uint8_t NOVA_PREAMBLE3 = 0x12;   //3
 
     // do we have new position information?
     bool            _new_position:1;
@@ -91,7 +91,7 @@ private:
         //14
         uint16_t week;
         //16
-        uint32_t tow;
+        uint32_t tow;  //一周的时间
         //20
         uint32_t recvstatus;
         // 24
@@ -116,9 +116,9 @@ private:
     {
         uint32_t solstat;      ///< Solution status
         uint32_t postype;      ///< Position type
-        double lat;            ///< latitude (deg)
-        double lng;            ///< longitude (deg)
-        double hgt;            ///< height above mean sea level (m)
+        double lat;            ///< latitude (deg)  纬度
+        double lng;            ///< longitude (deg) 经度
+        double hgt;            ///< height above mean sea level (m)  海拔高度
         float undulation;      ///< relationship between the geoid and the ellipsoid (m)
         uint32_t datumid;      ///< datum id number
         float latsdev;         ///< latitude standard deviation (m)
@@ -152,15 +152,15 @@ private:
     };
     
     union PACKED msgbuffer {
-        bestvel bestvelu;
-        bestpos bestposu;
-        psrdop psrdopu;
-        uint8_t bytes[256];
+        bestvel bestvelu;  //用于取速度相关的值
+        bestpos bestposu;  //用于取位置相关的值
+        psrdop psrdopu;    //用于取精度因子的值
+        uint8_t bytes[256];  //存有效数据的值
     };
     
     union PACKED msgheader {
-        nova_header nova_headeru;
-        uint8_t data[28];
+        nova_header nova_headeru;  //用他的元素来取数据
+        uint8_t data[28];          //用他来存帧头的数据
     };
 
     struct PACKED nova_msg_parser

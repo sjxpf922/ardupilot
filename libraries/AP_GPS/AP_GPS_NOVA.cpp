@@ -37,7 +37,7 @@ do {                                            \
 #else
  # define Debug(fmt, args ...)
 #endif
-
+//构造函数
 AP_GPS_NOVA::AP_GPS_NOVA(AP_GPS &_gps, AP_GPS::GPS_State &_state,
                        AP_HAL::UARTDriver *_port) :
     AP_GPS_Backend(_gps, _state, _port)
@@ -95,7 +95,7 @@ AP_GPS_NOVA::parse(uint8_t temp)
             }
             else
             {
-                nova_msg.nova_state = nova_msg_parser::PREAMBLE1;
+                nova_msg.nova_state = nova_msg_parser::PREAMBLE1; //返回帧头1重新开始
             }
             break;
         case nova_msg_parser::PREAMBLE3:
@@ -105,48 +105,48 @@ AP_GPS_NOVA::parse(uint8_t temp)
             }
             else
             {
-                nova_msg.nova_state = nova_msg_parser::PREAMBLE1;
+                nova_msg.nova_state = nova_msg_parser::PREAMBLE1; //否则重新从帧头1开始
             }
             break;
         case nova_msg_parser::HEADERLENGTH:
             Debug("NOVA HEADERLENGTH\n");
-            nova_msg.header.data[0] = NOVA_PREAMBLE1;
+            nova_msg.header.data[0] = NOVA_PREAMBLE1; //开始存储数据
             nova_msg.header.data[1] = NOVA_PREAMBLE2;
             nova_msg.header.data[2] = NOVA_PREAMBLE3;
             nova_msg.header.data[3] = temp;
-            nova_msg.header.nova_headeru.headerlength = temp;
+            nova_msg.header.nova_headeru.headerlength = temp;//帧头长度
             nova_msg.nova_state = nova_msg_parser::HEADERDATA;
-            nova_msg.read = 4;
+            nova_msg.read = 4;  //读了四个数据
             break;
         case nova_msg_parser::HEADERDATA:
-            if (nova_msg.read >= sizeof(nova_msg.header.data)) {
+            if (nova_msg.read >= sizeof(nova_msg.header.data)) {  //说明解析头溢出长度
                 Debug("parse header overflow length=%u\n", (unsigned)nova_msg.read);
-                nova_msg.nova_state = nova_msg_parser::PREAMBLE1;
+                nova_msg.nova_state = nova_msg_parser::PREAMBLE1; //重新找帧头
                 break;
             }
-            nova_msg.header.data[nova_msg.read] = temp;
+            nova_msg.header.data[nova_msg.read] = temp;//从data[4]开始存储以后要解析的数据 第五个数据
             nova_msg.read++;
-            if (nova_msg.read >= nova_msg.header.nova_headeru.headerlength)
+            if (nova_msg.read >= nova_msg.header.nova_headeru.headerlength) //说明已经进入有效数据接收了
             {
                 nova_msg.nova_state = nova_msg_parser::DATA;
             }
             break;
         case nova_msg_parser::DATA:
-            if (nova_msg.read >= sizeof(nova_msg.data)) {
+            if (nova_msg.read >= sizeof(nova_msg.data)) {  //超过了能存储的空间
                 Debug("parse data overflow length=%u msglength=%u\n", (unsigned)nova_msg.read,nova_msg.header.nova_headeru.messagelength);
-                nova_msg.nova_state = nova_msg_parser::PREAMBLE1;
+                nova_msg.nova_state = nova_msg_parser::PREAMBLE1; //重新找帧头
                 break;
             }
-            nova_msg.data.bytes[nova_msg.read - nova_msg.header.nova_headeru.headerlength] = temp;
-            nova_msg.read++;
-            if (nova_msg.read >= (nova_msg.header.nova_headeru.messagelength + nova_msg.header.nova_headeru.headerlength))
+            nova_msg.data.bytes[nova_msg.read - nova_msg.header.nova_headeru.headerlength] = temp;//将数据存放在union中
+            nova_msg.read++;      //在这里可不止接收一字节有效数据，下面有个break，会在这两行代码一直循环的，直到下面的if成立，开始进行校验
+            if (nova_msg.read >= (nova_msg.header.nova_headeru.messagelength + nova_msg.header.nova_headeru.headerlength))//开始校验
             {
                 Debug("NOVA DATA exit\n");
                 nova_msg.nova_state = nova_msg_parser::CRC1;
             }
             break;
         case nova_msg_parser::CRC1:
-            nova_msg.crc = (uint32_t) (temp << 0);
+            nova_msg.crc = (uint32_t) (temp << 0);//低八位
             nova_msg.nova_state = nova_msg_parser::CRC2;
             break;
         case nova_msg_parser::CRC2:
@@ -158,15 +158,15 @@ AP_GPS_NOVA::parse(uint8_t temp)
             nova_msg.nova_state = nova_msg_parser::CRC4;
             break;
         case nova_msg_parser::CRC4:
-            nova_msg.crc += (uint32_t) (temp << 24);
-            nova_msg.nova_state = nova_msg_parser::PREAMBLE1;
+            nova_msg.crc += (uint32_t) (temp << 24);//高八位
+            nova_msg.nova_state = nova_msg_parser::PREAMBLE1;//开始下一帧数据
 
             uint32_t crc = CalculateBlockCRC32((uint32_t)nova_msg.header.nova_headeru.headerlength, (uint8_t *)&nova_msg.header.data, (uint32_t)0);
             crc = CalculateBlockCRC32((uint32_t)nova_msg.header.nova_headeru.messagelength, (uint8_t *)&nova_msg.data, crc);
 
             if (nova_msg.crc == crc)
             {
-                return process_message();
+                return process_message(); //开始进行数据解析了
             }
             else
             {
@@ -182,34 +182,34 @@ AP_GPS_NOVA::parse(uint8_t temp)
 bool
 AP_GPS_NOVA::process_message(void)
 {
-    uint16_t messageid = nova_msg.header.nova_headeru.messageid;
+    uint16_t messageid = nova_msg.header.nova_headeru.messageid;//取出值
 
     Debug("NOVA process_message messid=%u\n",messageid);
 
     check_new_itow(nova_msg.header.nova_headeru.tow, nova_msg.header.nova_headeru.messagelength + nova_msg.header.nova_headeru.headerlength);
     
-    if (messageid == 42) // bestpos
+    if (messageid == 42) // bestpos  //说明这一帧是位置信息 进行相关数据的提取
     {
-        const bestpos &bestposu = nova_msg.data.bestposu;
+        const bestpos &bestposu = nova_msg.data.bestposu;  //引用  bestposu是nova_msg.data.bestposu的引用
 
-        state.time_week = nova_msg.header.nova_headeru.week;
-        state.time_week_ms = (uint32_t) nova_msg.header.nova_headeru.tow;
+        state.time_week = nova_msg.header.nova_headeru.week;//把周取出来
+        state.time_week_ms = (uint32_t) nova_msg.header.nova_headeru.tow;//一周的时间
         state.last_gps_time_ms = AP_HAL::millis();
 
-        state.location.lat = (int32_t) (bestposu.lat * (double)1e7);
-        state.location.lng = (int32_t) (bestposu.lng * (double)1e7);
-        state.location.alt = (int32_t) (bestposu.hgt * 100);
+        state.location.lat = (int32_t) (bestposu.lat * (double)1e7);  //计算纬度
+        state.location.lng = (int32_t) (bestposu.lng * (double)1e7);  //经度
+        state.location.alt = (int32_t) (bestposu.hgt * 100);          //高度       这些值会被放在GPS_Backend.h public里供外部使用
 
-        state.num_sats = bestposu.svsused;
+        state.num_sats = bestposu.svsused;  //使用的卫星数量
 
-        state.horizontal_accuracy = (float) ((bestposu.latsdev + bestposu.lngsdev)/2);
-        state.vertical_accuracy = (float) bestposu.hgtsdev;
+        state.horizontal_accuracy = (float) ((bestposu.latsdev + bestposu.lngsdev)/2);  //水平均方根精度估计，单位为m
+        state.vertical_accuracy = (float) bestposu.hgtsdev;  //垂直均方根精度估计，单位为m
         state.have_horizontal_accuracy = true;
         state.have_vertical_accuracy = true;
-        state.rtk_age_ms = bestposu.diffage * 1000;
+        state.rtk_age_ms = bestposu.diffage * 1000;   //最后一次基线校正的GPS年龄(毫秒)(没有校正时为0,0xFFFFFFFF表示溢出)
         state.rtk_num_sats = bestposu.svsused;
 
-        if (bestposu.solstat == 0) // have a solution
+        if (bestposu.solstat == 0) // have a solution      //定位状态
         {
             switch (bestposu.postype)
             {
@@ -242,13 +242,13 @@ AP_GPS_NOVA::process_message(void)
         }
         else
         {
-            state.status = AP_GPS::NO_FIX;
+            state.status = AP_GPS::NO_FIX;    //接收有效的GPS信息，但没有锁定
         }
         
-        _new_position = true;
+        _new_position = true;           //标志位
     }
 
-    if (messageid == 99) // bestvel
+    if (messageid == 99) // bestvel      //说明是速度信息
     {
         const bestvel &bestvelu = nova_msg.data.bestvelu;
 
@@ -262,7 +262,7 @@ AP_GPS_NOVA::process_message(void)
         _new_speed = true;
     }
 
-    if (messageid == 174) // psrdop
+    if (messageid == 174) // psrdop    //说明这一帧数据是精度因子
     {
         const psrdop &psrdopu = nova_msg.data.psrdopu;
 

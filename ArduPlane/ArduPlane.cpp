@@ -48,7 +48,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(read_airspeed,          10,    100),
     SCHED_TASK(update_alt,             10,    200),
     SCHED_TASK(adjust_altitude_target, 10,    200),
-    SCHED_TASK(OneHz_PrintfPwm, 1,    100),
+    SCHED_TASK(OneHz_PrintfPwm, 10,    100),
 #if ADVANCED_FAILSAFE == ENABLED
     SCHED_TASK(afs_fs_check,           10,    100),
 #endif
@@ -292,6 +292,10 @@ void Plane::one_second_loop()
             // reset the landing altitude correction
             landing.alt_offset = 0;
     }
+    gcs().send_text(MAV_SEVERITY_CRITICAL,"speed is %f",plane.TestUart.airspeed);
+
+    gcs().send_text(MAV_SEVERITY_CRITICAL," %x  %x  %x  %x",plane.TestUart._buff[0],plane.TestUart._buff[1],plane.TestUart._buff[2],plane.TestUart._buff[3]);
+
 }
 
 void Plane::compass_save()
@@ -682,9 +686,7 @@ float Plane::tecs_hgt_afe(void)
 }
 void Plane::OneHz_PrintfPwm(void)
 {
-    hal.uartF->printf("左矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorLeft_pwm);
-    hal.uartF->printf("右矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
-    //testuart._port->printf("%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
+    plane.TestUart.ChangeSpeed();
 
 }
 #if OSD_ENABLED == ENABLED
