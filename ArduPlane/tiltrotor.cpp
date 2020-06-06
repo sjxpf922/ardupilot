@@ -184,7 +184,8 @@ void QuadPlane::tiltrotor_update(void)
     if (tilt.tilt_type == TILT_TYPE_BINARY) {
         tiltrotor_binary_update();
     } else {
-        tiltrotor_continuous_update();
+       // tiltrotor_continuous_update();
+        tiltrotor_binary_update();
     }
 
     if (tilt.tilt_type == TILT_TYPE_VECTORED_YAW) {
@@ -380,6 +381,7 @@ void QuadPlane::tiltrotor_bicopter(void)
     if (!in_vtol_mode() && tiltrotor_fully_fwd()) {
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft, 0);
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, 0);
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"tiltdone");//用来看程序运行到哪了
         return;
     }
 

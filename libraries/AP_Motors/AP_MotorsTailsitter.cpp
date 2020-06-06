@@ -81,7 +81,7 @@ void AP_MotorsTailsitter::output_to_motors()
     if (!_flags.initialised_ok) {
         return;
     }
-    gcs().send_text(MAV_SEVERITY_CRITICAL,"in output_to_motors");
+    //gcs().send_text(MAV_SEVERITY_CRITICAL,"in output_to_motors");
     switch (_spool_state) {
         case SpoolState::SHUT_DOWN:
             SRV_Channels::set_output_pwm(SRV_Channel::k_throttleLeft, get_pwm_output_min());
@@ -99,7 +99,7 @@ void AP_MotorsTailsitter::output_to_motors()
             SRV_Channels::set_output_pwm(SRV_Channel::k_throttleRight, output_to_pwm(thrust_to_actuator(_thrust_right)));
             break;
     }
-    gcs().send_text(MAV_SEVERITY_CRITICAL,"_tilt_left = %d \n",_tilt_left); //固定翼时：会有输出吗
+   // gcs().send_text(MAV_SEVERITY_CRITICAL,"_tilt_left = %d \n",_tilt_left); //固定翼时：会有输出吗
     // Always output to tilt servos
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft, _tilt_left*SERVO_OUTPUT_RANGE);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, _tilt_right*SERVO_OUTPUT_RANGE);
