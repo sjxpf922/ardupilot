@@ -1460,11 +1460,17 @@ void QuadPlane::update_transition(void)
     }
 
    // float aspeed ;
+
   // float aspeed = plane.TestUart.loop();
     float aspeed = plane.TestUart.airspeed;
 
    // hal.uartF->printf("kongsu is %f \n", aspeed);
     bool have_airspeed = true;
+
+    //float aspeed = plane.TestUart.loop();
+   // hal.uartF->printf("kongsu is %f \n", aspeed);
+  // bool have_airspeed = true;
+
     //bool have_airspeed = ahrs.airspeed_estimate(&aspeed);
 
     // tailsitters use angle wait, not airspeed wait

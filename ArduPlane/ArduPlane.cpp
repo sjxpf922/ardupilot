@@ -48,7 +48,11 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(read_airspeed,          10,    100),
     SCHED_TASK(update_alt,             10,    200),
     SCHED_TASK(adjust_altitude_target, 10,    200),
+
     SCHED_TASK(OneHz_PrintfPwm, 10,    100),
+
+   // SCHED_TASK(OneHz_PrintfPwm, 5,    100),
+
 #if ADVANCED_FAILSAFE == ENABLED
     SCHED_TASK(afs_fs_check,           10,    100),
 #endif
@@ -688,6 +692,12 @@ void Plane::OneHz_PrintfPwm(void)
 {
     plane.TestUart.ChangeSpeed();
 
+    float a = plane.TestUart.loop();
+    //hal.uartF->printf("左矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorLeft_pwm);
+   // hal.uartF->printf("右矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
+    //testuart._port->printf("%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
+   // plane.TestUart.senddata(1);
+    hal.uartF->printf("a = %.3f\n",a);
 }
 #if OSD_ENABLED == ENABLED
 void Plane::publish_osd_info()
