@@ -56,6 +56,7 @@ void QuadPlane::tailsitter_output(void)
     if (!is_tailsitter()) {
         return;
     }
+    gcs().send_text(MAV_SEVERITY_CRITICAL,"in tailsitter");  //如果能成功打印，这说明上面的if没有进入
 
     float tilt_left = 0.0f;
     float tilt_right = 0.0f;
