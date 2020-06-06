@@ -44,7 +44,7 @@ public:
     // Should be called at 50Hz or greater
     void update_50hz(void) override;
 
-    // Update the control loop calculations
+    // Update the control loop calculations  更新控制回路的计算
     void update_pitch_throttle(int32_t hgt_dem_cm,
                                int32_t EAS_dem_cm,
                                enum AP_Vehicle::FixedWing::FlightStage flight_stage,

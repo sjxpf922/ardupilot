@@ -130,7 +130,7 @@ const AP_Param::GroupInfo AP_TECS::var_info[] = {
     AP_GROUPINFO("LAND_THR", 13, AP_TECS, _landThrottle, -1),
 
     // @Param: LAND_SPDWGT
-    // @DisplayName: Weighting applied to speed control during landing.
+    // @DisplayName: Weighting applied to speed control during landing.  在着陆过程中用于速度控制的加权。
     // @Description: Same as SPDWEIGHT parameter, with the exception that this parameter is applied during landing flight stages.  A value closer to 2 will result in the plane ignoring height error during landing and our experience has been that the plane will therefore keep the nose up -- sometimes good for a glider landing (with the side effect that you will likely glide a ways past the landing point).  A value closer to 0 results in the plane ignoring speed error -- use caution when lowering the value below 1 -- ignoring speed could result in a stall. Values between 0 and 2 are valid values for a fixed landing weight. When using -1 the weight will be scaled during the landing. At the start of the landing approach it starts with TECS_SPDWEIGHT and scales down to 0 by the time you reach the land point. Example: Halfway down the landing approach you'll effectively have a weight of TECS_SPDWEIGHT/2.
     // @Range: -1.0 2.0
     // @Increment: 0.1
@@ -622,7 +622,7 @@ void AP_TECS::_update_throttle_with_airspeed(void)
     _STEdotErrLast = STEdot_error;
 
     // Calculate throttle demand
-    // If underspeed condition is set, then demand full throttle
+    // If underspeed condition is set, then demand full throttle  //如果设定了低速状态，则要求油门全开
     if (_flags.underspeed)
     {
         _throttle_dem = 1.0f;
@@ -786,15 +786,15 @@ void AP_TECS::_update_pitch(void)
     // rises above the demanded value, the pitch angle will be increased by the TECS controller.
     float SKE_weighting = constrain_float(_spdWeight, 0.0f, 2.0f);
     if (!_ahrs.airspeed_sensor_enabled()) {
-        SKE_weighting = 0.0f;
+        SKE_weighting = 0.0f;   //没有空速的话就把控制权交给高度控制
     } else if (_flight_stage == AP_Vehicle::FixedWing::FLIGHT_VTOL) {
         // if we are in VTOL mode then control pitch without regard to
         // speed. Speed is also taken care of independently of
         // height. This is needed as the usual relationship of speed
         // and height is broken by the VTOL motors
-        SKE_weighting = 0.0f;        
+        SKE_weighting = 0.0f;        //垂起模式下 也将控制权交给高度控制
     } else if ( _flags.underspeed || _flight_stage == AP_Vehicle::FixedWing::FLIGHT_TAKEOFF || _flight_stage == AP_Vehicle::FixedWing::FLIGHT_ABORT_LAND) {
-        SKE_weighting = 2.0f;
+        SKE_weighting = 2.0f;  //速度控制
     } else if (_flags.is_doing_auto_land) {
         if (_spdWeightLand < 0) {
             // use sliding scale from normal weight down to zero at landing
@@ -1007,7 +1007,7 @@ void AP_TECS::update_pitch_throttle(int32_t hgt_dem_cm,
         _PITCHminf = MAX(_pitch_min, aparm.pitch_limit_min_cd * 0.01f);
     }
 
-    // apply temporary pitch limit and clear
+    // apply temporary（临时） pitch limit and clear
     if (_pitch_max_limit < 90) {
         _PITCHmaxf = constrain_float(_PITCHmaxf, -90, _pitch_max_limit);
         _PITCHminf = constrain_float(_PITCHminf, -_pitch_max_limit, _PITCHmaxf);
