@@ -1098,9 +1098,9 @@ private:
                   "_failsafe_priorities is missing the sentinel");
 
 
-
+/*
+ * 测试用
     struct {
-
     float    aileron_pwm;
     float    elevator_pwm;
     float    throttle_pwm;            //油门
@@ -1112,6 +1112,7 @@ private:
     float    tiltMotorRight_pwm;     //右矢量舵机
 
     } CH_PWM;
+    */
 public:
     void mavlink_delay_cb();
     void failsafe_check(void);

@@ -49,9 +49,8 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(update_alt,             10,    200),
     SCHED_TASK(adjust_altitude_target, 10,    200),
 
-    SCHED_TASK(OneHz_PrintfPwm, 10,    100),
+    SCHED_TASK(OneHz_PrintfPwm, 1,    100),
 
-   // SCHED_TASK(OneHz_PrintfPwm, 5,    100),
 
 #if ADVANCED_FAILSAFE == ENABLED
     SCHED_TASK(afs_fs_check,           10,    100),
@@ -296,9 +295,9 @@ void Plane::one_second_loop()
             // reset the landing altitude correction
             landing.alt_offset = 0;
     }
-    gcs().send_text(MAV_SEVERITY_CRITICAL,"speed is %f",plane.TestUart.airspeed);
+   // gcs().send_text(MAV_SEVERITY_CRITICAL,"speed is %f",plane.TestUart.airspeed);
 
-    gcs().send_text(MAV_SEVERITY_CRITICAL," %x  %x  %x  %x",plane.TestUart._buff[0],plane.TestUart._buff[1],plane.TestUart._buff[2],plane.TestUart._buff[3]);
+  //  gcs().send_text(MAV_SEVERITY_CRITICAL," %x  %x  %x  %x",plane.TestUart._buff[0],plane.TestUart._buff[1],plane.TestUart._buff[2],plane.TestUart._buff[3]);
 
 }
 
@@ -688,17 +687,14 @@ float Plane::tecs_hgt_afe(void)
     }
     return hgt_afe;
 }
+
+//*****************串口改变空速测试函数*********************//
+
 void Plane::OneHz_PrintfPwm(void)
 {
     plane.TestUart.ChangeSpeed();
-
-    float a = plane.TestUart.loop();
-    //hal.uartF->printf("左矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorLeft_pwm);
-   // hal.uartF->printf("右矢量舵机输出：%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
-    //testuart._port->printf("%.3f\n",plane.CH_PWM.tiltMotorRight_pwm);
-   // plane.TestUart.senddata(1);
-    hal.uartF->printf("a = %.3f\n",a);
 }
+//****************************************************//
 #if OSD_ENABLED == ENABLED
 void Plane::publish_osd_info()
 {

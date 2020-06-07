@@ -102,6 +102,15 @@ void AP_MotorsTailsitter::output_to_motors()
     // Always output to tilt servos
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft, _tilt_left*SERVO_OUTPUT_RANGE);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, _tilt_right*SERVO_OUTPUT_RANGE);
+ /* ²âÊÔÓÃ
+   static uint8_t num = 0;
+   num ++;
+   if(num >=50)
+   {
+       hal.uartF->printf("_tilt_left = %f _tilt_right = %f\n",_tilt_left,_tilt_right);
+       num = 0;
+   }
+*/
 
 }
 

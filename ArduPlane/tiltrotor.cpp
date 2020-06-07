@@ -380,6 +380,15 @@ void QuadPlane::tiltrotor_bicopter(void)
     if (!in_vtol_mode() && tiltrotor_fully_fwd()) {
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  0);
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, 0);
+        /*²âÊÔÓÃ
+          static uint8_t num = 0;
+          num ++;
+          if(num >=50)
+          {
+              hal.uartF->printf("tilt_done\n");
+              num = 0;
+          }
+      */
         return;
     }
 
@@ -410,8 +419,15 @@ void QuadPlane::tiltrotor_bicopter(void)
     // add current tilt and constrain
     tilt_left  = constrain_float(tilt_left,  -SERVO_MAX, SERVO_MAX);
     tilt_right = constrain_float(tilt_right, -SERVO_MAX, SERVO_MAX);
-    plane.CH_PWM.tiltMotorLeft_pwm = tilt_left;
-    plane.CH_PWM.tiltMotorRight_pwm = tilt_right;
+   /* ²âÊÔÓÃ
+    static uint8_t num = 0;
+    num ++;
+    if(num >=50)
+    {
+        hal.uartF->printf("11\n");
+        num = 0;
+    }
+  */
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  tilt_left);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, tilt_right);
 }
