@@ -381,7 +381,7 @@ void QuadPlane::tiltrotor_bicopter(void)
     if (!in_vtol_mode() && tiltrotor_fully_fwd()) {
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft, 0);
         SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, 0);
-        gcs().send_text(MAV_SEVERITY_CRITICAL,"tiltdone");//用来看程序运行到哪了
+        //gcs().send_text(MAV_SEVERITY_CRITICAL,"tiltdone");//用来看程序运行到哪了
         return;
     }
 
@@ -415,5 +415,5 @@ void QuadPlane::tiltrotor_bicopter(void)
 
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  tilt_left);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, tilt_right);
-    gcs().send_text(MAV_SEVERITY_CRITICAL,"in tiltrotor_bicopter");//用来看程序运行到哪了
+  //  gcs().send_text(MAV_SEVERITY_CRITICAL,"in tiltrotor_bicopter");//用来看程序运行到哪了
 }

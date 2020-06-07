@@ -81,7 +81,7 @@ void AP_MotorsTailsitter::output_to_motors()
     if (!_flags.initialised_ok) {
         return;
     }
-    //gcs().send_text(MAV_SEVERITY_CRITICAL,"in output_to_motors");
+   // gcs().send_text(MAV_SEVERITY_CRITICAL,"in output_to_motors");
     switch (_spool_state) {
         case SpoolState::SHUT_DOWN:
             SRV_Channels::set_output_pwm(SRV_Channel::k_throttleLeft, get_pwm_output_min());
