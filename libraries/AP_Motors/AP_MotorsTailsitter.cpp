@@ -181,6 +181,7 @@ void AP_MotorsTailsitter::output_armed_stabilizing()
     // thrust vectoring
     _tilt_left  = pitch_thrust - yaw_thrust;
     _tilt_right = pitch_thrust + yaw_thrust;
+    hal.uartF->printf("_tilt_left = %f.3\n",_tilt_left);
 }
 
 // output_test_seq - spin a motor at the pwm value specified

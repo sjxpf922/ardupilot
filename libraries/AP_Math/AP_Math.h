@@ -165,7 +165,7 @@ static inline constexpr float radians(float deg)
     return deg * DEG_TO_RAD;
 }
 
-// radians -> degrees
+// radians -> degrees  »¡¶È±ä½Ç¶È
 static inline constexpr float degrees(float rad)
 {
     return rad * RAD_TO_DEG;

@@ -33,7 +33,7 @@ public:
      *
      * @return
      */
-    const Vector3f&    get_position() const override;
+    const Vector3f&    get_position() const override;  //ÖØÐ´¸¸Àà£¨AP_InertialNav£©º¯Êý
 
     /**
      * get_velocity - returns the current velocity in cm/s

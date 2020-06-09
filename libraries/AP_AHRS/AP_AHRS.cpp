@@ -128,7 +128,7 @@ const AP_Param::GroupInfo AP_AHRS::var_info[] = {
     // @DisplayName: Use NavEKF Kalman filter for attitude and position estimation
     // @Description: This controls which NavEKF Kalman filter version is used for attitude and position estimation
     // @Values: 0:Disabled,2:Enable EKF2,3:Enable EKF3
-    // @User: Advanced
+    // @User: Advanced  //滤波器的版本
     AP_GROUPINFO("EKF_TYPE",  14, AP_AHRS, _ekf_type, 2),
 #endif
 
@@ -172,14 +172,14 @@ void AP_AHRS::init()
 #endif
 }
 
-// return a smoothed and corrected gyro vector using the latest ins data (which may not have been consumed by the EKF yet)
+// return a smoothed and corrected gyro vector using the latest ins data (which may not have been consumed by the EKF yet) 使用最新的ins数据(可能还没有被EKF使用)返回一个平滑和校正的陀螺矢量
 Vector3f AP_AHRS::get_gyro_latest(void) const
 {
     const uint8_t primary_gyro = get_primary_gyro_index();
     return AP::ins().get_gyro(primary_gyro) + get_gyro_drift();
 }
 
-// return airspeed estimate if available
+// return airspeed estimate if available  空速估计
 bool AP_AHRS::airspeed_estimate(float *airspeed_ret) const
 {
     if (airspeed_sensor_enabled()) {
@@ -226,7 +226,7 @@ void AP_AHRS::add_trim(float roll_in_radians, float pitch_in_radians, bool save_
     }
 }
 
-// Set the board mounting orientation, may be called while disarmed
+// Set the board mounting orientation, may be called while disarmed  设置飞控安装方向
 void AP_AHRS::update_orientation()
 {
     const enum Rotation orientation = (enum Rotation)_board_orientation.get();
@@ -245,7 +245,7 @@ void AP_AHRS::update_orientation()
 }
 
 // return a ground speed estimate in m/s
-Vector2f AP_AHRS::groundspeed_vector(void)
+Vector2f AP_AHRS::groundspeed_vector(void)  // 地速 = 空 + 风
 {
     // Generate estimate of ground speed vector using air data system
     Vector2f gndVelADS;
@@ -360,7 +360,7 @@ void AP_AHRS::calc_trig(const Matrix3f &rot,
 
 // update_trig - recalculates _cos_roll, _cos_pitch, etc based on latest attitude
 //      should be called after _dcm_matrix is updated
-void AP_AHRS::update_trig(void)
+void AP_AHRS::update_trig(void)  //更新三角余弦
 {
     if (_last_trim != _trim.get()) {
         _last_trim = _trim.get();
@@ -374,7 +374,7 @@ void AP_AHRS::update_trig(void)
 }
 
 /*
-  update the centi-degree values
+  update the centi-degree values   更新当前角度值
  */
 void AP_AHRS::update_cd_values(void)
 {
@@ -399,7 +399,7 @@ AP_AHRS_View *AP_AHRS::create_view(enum Rotation rotation, float pitch_trim_deg)
 }
 
 /*
- * Update AOA and SSA estimation based on airspeed, velocity vector and wind vector
+ * Update AOA 攻角and SSA侧滑角 estimation based on airspeed, velocity vector and wind vector
  *
  * Based on:
  * "On estimation of wind velocity, angle-of-attack and sideslip angle of small UAVs using standard sensors" by
@@ -458,27 +458,27 @@ void AP_AHRS::update_AOA_SSA(void)
 }
 
 // return current AOA
-float AP_AHRS::getAOA(void)
+float AP_AHRS::getAOA(void)  //迎角
 {
     update_AOA_SSA();
     return _AOA;
 }
 
 // return calculated SSA
-float AP_AHRS::getSSA(void)
+float AP_AHRS::getSSA(void) //侧滑角
 {
     update_AOA_SSA();
     return _SSA;
 }
 
-// rotate a 2D vector from earth frame to body frame
+// rotate a 2D vector from earth frame to body frame      旋转二轴矢量从地球坐标系到机体
 Vector2f AP_AHRS::rotate_earth_to_body2D(const Vector2f &ef) const
 {
     return Vector2f(ef.x * _cos_yaw + ef.y * _sin_yaw,
                     -ef.x * _sin_yaw + ef.y * _cos_yaw);
 }
 
-// rotate a 2D vector from earth frame to body frame
+// rotate a 2D vector from earth frame to body frame  旋转二轴矢量从机体到地球坐标系
 Vector2f AP_AHRS::rotate_body_to_earth2D(const Vector2f &bf) const
 {
     return Vector2f(bf.x * _cos_yaw - bf.y * _sin_yaw,
@@ -504,7 +504,7 @@ void AP_AHRS::Log_Write_Home_And_Origin()
     }
 }
 
-// get apparent to true airspeed ratio
+// get apparent to true airspeed ratio 得到明显的真实空速比
 float AP_AHRS::get_EAS2TAS(void) const {
     return AP::baro().get_EAS2TAS();
 }

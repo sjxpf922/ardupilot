@@ -46,7 +46,7 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
     _dcm_matrix.identity();
 }
 
-// return the smoothed gyro vector corrected for drift
+// return the smoothed gyro vector corrected for drift 返回校正漂移的平滑陀螺仪矢量
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
 {
     if (!active_EKF_type()) {
@@ -55,7 +55,7 @@ const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
     return _gyro_estimate;
 }
 
-const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
+const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const  //机体轴转北东地
 {
     if (!active_EKF_type()) {
         return AP_AHRS_DCM::get_rotation_body_to_ned();
@@ -63,7 +63,7 @@ const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
     return _dcm_matrix;
 }
 
-const Vector3f &AP_AHRS_NavEKF::get_gyro_drift(void) const
+const Vector3f &AP_AHRS_NavEKF::get_gyro_drift(void) const  //获取陀螺漂移
 {
     if (!active_EKF_type()) {
         return AP_AHRS_DCM::get_gyro_drift();
@@ -73,7 +73,7 @@ const Vector3f &AP_AHRS_NavEKF::get_gyro_drift(void) const
 
 // reset the current gyro drift estimate
 //  should be called if gyro offsets are recalculated
-void AP_AHRS_NavEKF::reset_gyro_drift(void)
+void AP_AHRS_NavEKF::reset_gyro_drift(void)        //重置陀螺漂移   需要调用AP_NavEKF2.cpp
 {
     // support locked access functions to AHRS data
     WITH_SEMAPHORE(_rsem);
@@ -85,11 +85,11 @@ void AP_AHRS_NavEKF::reset_gyro_drift(void)
     EKF2.resetGyroBias();
     EKF3.resetGyroBias();
 }
-
+// 统一更新 该函数会被arduplane.cpp Copter.cpp等调用
 void AP_AHRS_NavEKF::update(bool skip_ins_update)
 {
-    // support locked access functions to AHRS data
-    WITH_SEMAPHORE(_rsem);
+    // support locked access functions to AHRS data  支持对AHRS数据的锁定访问功能
+    WITH_SEMAPHORE(_rsem);  //有关操作系统了
     
     // drop back to normal priority if we were boosted by the INS
     // calling delay_microseconds_boost()
@@ -97,10 +97,10 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     
     // EKF1 is no longer supported - handle case where it is selected
     if (_ekf_type == 1) {
-        _ekf_type.set(2);
+        _ekf_type.set(2); //EKF1不再支持，设置为2
     }
 
-    update_DCM(skip_ins_update);
+    update_DCM(skip_ins_update);//更新方向余弦矩阵
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     update_SITL();
@@ -109,7 +109,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
-        update_EKF2();
+        update_EKF2(); //先更新EKF2 否则反之
         update_EKF3();
     } else {
         // otherwise run EKF3 first
@@ -118,11 +118,11 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     }
 
 #if AP_MODULE_SUPPORTED
-    // call AHRS_update hook if any
+    // call AHRS_update hook if any //钩子函数
     AP_Module::call_hook_AHRS_update(*this);
 #endif
 
-    // push gyros if optical flow present
+    // push gyros if optical flow present  //光流
     if (hal.opticalflow) {
         const Vector3f &exported_gyro_bias = get_gyro_drift();
         hal.opticalflow->push_gyro_bias(exported_gyro_bias.x, exported_gyro_bias.y);
@@ -154,7 +154,9 @@ void AP_AHRS_NavEKF::update_DCM(bool skip_ins_update)
     // keep DCM attitude available for get_secondary_attitude()
     _dcm_attitude(roll, pitch, yaw);
 }
-
+/*
+更新EKF2 解算出欧拉角
+*/
 void AP_AHRS_NavEKF::update_EKF2(void)
 {
     if (!_ekf2_started) {
@@ -163,27 +165,27 @@ void AP_AHRS_NavEKF::update_EKF2(void)
             start_time_ms = AP_HAL::millis();
         }
         if (AP_HAL::millis() - start_time_ms > startup_delay_ms || _force_ekf) {
-            _ekf2_started = EKF2.InitialiseFilter();
+            _ekf2_started = EKF2.InitialiseFilter(); //初始化
             if (_force_ekf) {
                 return;
             }
         }
     }
     if (_ekf2_started) {
-        EKF2.UpdateFilter();
+        EKF2.UpdateFilter();  //更新EKF2滤波器
         if (active_EKF_type() == EKF_TYPE2) {
             Vector3f eulers;
-            EKF2.getRotationBodyToNED(_dcm_matrix);
-            EKF2.getEulerAngles(-1,eulers);
+            EKF2.getRotationBodyToNED(_dcm_matrix);//将体轴系转到北东地
+            EKF2.getEulerAngles(-1,eulers); //获取欧拉角
             roll  = eulers.x;
             pitch = eulers.y;
             yaw   = eulers.z;
 
             update_cd_values();
-            update_trig();
+            update_trig();//更新姿态角的三角余弦值
 
             // Use the primary EKF to select the primary gyro
-            const int8_t primary_imu = EKF2.getPrimaryCoreIMUIndex();
+            const int8_t primary_imu = EKF2.getPrimaryCoreIMUIndex();  // 使用EKF2设为主 选择gyro
 
             const AP_InertialSensor &_ins = AP::ins();
 
@@ -227,7 +229,9 @@ void AP_AHRS_NavEKF::update_EKF2(void)
     }
 }
 
-
+/*
+ 更新EKF3 解算出欧拉角
+ */
 void AP_AHRS_NavEKF::update_EKF3(void)
 {
     if (!_ekf3_started) {
@@ -360,7 +364,7 @@ void AP_AHRS_NavEKF::update_SITL(void)
 }
 #endif // CONFIG_HAL_BOARD
 
-// accelerometer values in the earth frame in m/s/s
+// accelerometer values in the earth frame in m/s/s   获取地球坐标系下加速度计的值
 const Vector3f &AP_AHRS_NavEKF::get_accel_ef(uint8_t i) const
 {
     if (active_EKF_type() == EKF_TYPE_NONE) {
@@ -369,7 +373,7 @@ const Vector3f &AP_AHRS_NavEKF::get_accel_ef(uint8_t i) const
     return _accel_ef_ekf[i];
 }
 
-// blended accelerometer values in the earth frame in m/s/s
+// blended accelerometer values in the earth frame in m/s/s  混合加速度计值
 const Vector3f &AP_AHRS_NavEKF::get_accel_ef_blended(void) const
 {
     if (active_EKF_type() == EKF_TYPE_NONE) {

@@ -13,7 +13,7 @@
 extern const AP_HAL::HAL& hal;
 
 
-
+/*
 
 AP_TestUart::AP_TestUart(void)
 {
@@ -22,9 +22,9 @@ AP_TestUart::AP_TestUart(void)
     airspeed = 0.0;
 }
 
-/*
  * init - perform required initialisation
  */
+/*
 bool AP_TestUart::init()
 {
     const AP_SerialManager &serial_manager = AP::serialmanager();
@@ -76,9 +76,10 @@ float AP_TestUart:: Asc_to_f(volatile unsigned char *str)
     value *= count * flag1; //符号位
     return (value);
 }
+*/
 /*
 
- */
+
 float AP_TestUart::loop(void)
 {
     if(_protocol != AP_SerialManager::SerialProtocol_TestUart || _port ==NULL)  //如果飞控并没有指派哪个串口连接，则返回false
@@ -118,7 +119,7 @@ float AP_TestUart :: ChangeSpeed(void)
     return airspeed = chartofloat.speed;
 }
 
-
+*/
 
 /*bool AP_TestUart :: read(void)
 {

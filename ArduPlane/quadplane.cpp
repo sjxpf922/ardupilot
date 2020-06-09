@@ -1459,14 +1459,14 @@ void QuadPlane::update_transition(void)
         plane.set_mode(plane.mode_qland, MODE_REASON_VTOL_FAILED_TRANSITION);
     }
 
-   // float aspeed ;
+  float aspeed ;
 
   // float aspeed = plane.TestUart.loop();
-    float aspeed = plane.TestUart.airspeed;
+   // float aspeed = plane.TestUart.airspeed;
 
-    bool have_airspeed = true;
+  //  bool have_airspeed = true;
 
-    //bool have_airspeed = ahrs.airspeed_estimate(&aspeed);
+    bool have_airspeed = ahrs.airspeed_estimate(&aspeed);
 
     // tailsitters use angle wait, not airspeed wait
     if (is_tailsitter() && transition_state == TRANSITION_AIRSPEED_WAIT) {

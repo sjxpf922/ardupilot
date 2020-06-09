@@ -778,11 +778,11 @@ void NavEKF2::UpdateFilter(void)
         primary = 0;
     }
 
-    check_log_write();
+    check_log_write();//检查是否日志保存
 }
 
 /*
-  check if switching lanes will reduce the normalised
+  check if switching lanes will reduce the normalised  检查一下换道是否会减少标准化的创新。
   innovations. This is called when the vehicle code is about to
   trigger an EKF failsafe, and it would like to avoid that by
   using a different EKF lane

@@ -133,7 +133,7 @@ void Plane::loop()
     G_Dt = scheduler.get_loop_period_s();
 }
 
-// update AHRS system
+// update AHRS system    在调度表里400Hz调用
 void Plane::ahrs_update()
 {
     arming.update_soft_armed();
@@ -692,7 +692,7 @@ float Plane::tecs_hgt_afe(void)
 
 void Plane::OneHz_PrintfPwm(void)
 {
-    plane.TestUart.ChangeSpeed();
+   // plane.TestUart.ChangeSpeed();
 }
 //****************************************************//
 #if OSD_ENABLED == ENABLED
