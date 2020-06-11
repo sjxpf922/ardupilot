@@ -931,6 +931,36 @@ void AP_GPS::inject_data(uint8_t *data, uint16_t len)
         inject_data(_inject_to, data, len);
     }
 }
+/***************************  by huhui**************************
+void
+AP_GPS::set_mti_location(int32_t longtitude,int32_t latitude,float altitude)
+{
+    if(stable_gps)
+    {
+        _GPS_STATE(0).location.lng=longtitude;
+        _GPS_STATE(0).location.lat=latitude;
+        _GPS_STATE(0).location.alt=altitude;//cm
+        _GPS_STATE(0).status=GPS_OK_FIX_3D;
+        have_mti_gps=true;
+        return;
+    }
+    if(is_zero(stable_gps_time))set_stable_gps_time();
+    if((AP_HAL::millis()>=stable_gps_time)&&(!stable_gps))stable_gps=true;
+}
+
+void
+AP_GPS::set_stable_gps_time()
+{
+    stable_gps_time=AP_HAL::millis()+5000;
+}
+
+void
+AP_GPS::set_mti_velocity(Vector3f mti_velocity)
+{
+    _GPS_STATE(0).velocity=mti_velocity;
+    _GPS_STATE(0).velocity.z=0.0f;
+}
+******************************************************/
 
 void AP_GPS::inject_data(uint8_t instance, uint8_t *data, uint16_t len)
 {

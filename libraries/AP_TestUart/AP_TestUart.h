@@ -40,31 +40,79 @@ public:
     bool  read(void);
     float airspeed;
     uint8_t _buff[4];
+    void Serialdata_parsing(uint8_t temp);
+    bool Read_Serial(void);
+    void process_message();
+    float Speed;
+    float Height;
 private:
 
     static const uint8_t UART_PREAMBLE1 = 0xaa;  //数据帧头 1
     static const uint8_t UART_PREAMBLE2 = 0x44;    //2
+    static const uint8_t DataId1 = 0x50;  //速度数据ID
+    static const uint8_t DataId2 = 0x55;  //高度数据ID
 
-    struct PACKED HEAR{
-    enum
+    struct PACKED Serial5_header
         {
-            PREAMBLE1 = 0,
-            PREAMBLE2,
-            DATA,
-        } hear_state;
-    } UART_msg;
+            uint8_t headerlength;
+            // 4
+            uint16_t messageid;
+            // 6
+            uint8_t datalength;
+            uint32_t crc;
+        };
+    struct PACKED parsingdata
+        {
 
+            float height;
+            float velocity;
+
+         };
+
+    union PACKED msgbuffer {
+        parsingdata _parsingdata;  //用于取高度相关的值
+        uint8_t bytes[256];  //存有效数据的值
+        };
+
+    union PACKED msgheader {
+        Serial5_header _header;  //用他的元素来取数据
+            uint8_t data[28];          //用他来存帧头的数据
+        };
+
+    union PACKED msgcrc {
+           uint32_t _crc;  //用他的元素来取数据
+            uint8_t data[4];          //用他来存帧头的数据
+           };
+    struct PACKED HEAR{
+        enum
+            {
+                PREAMBLE1 = 0,
+                PREAMBLE2,
+                HEADERLENGTH,
+                DATA,
+                DATALENGTH,
+                _CRC
+            } state;
+              msgbuffer valid_data;//
+              uint32_t crc;
+              msgheader header;
+              uint16_t read;
+              msgcrc _msgcrs;
+
+    } Serial5_msg;
+
+  //by sjx to charge airspeed
     union PACKED {
         float speed;
         uint8_t buff[4];
 
     }chartofloat;
 
-    union PACKED {
+   /* union PACKED {
          uint16_t messageid; ;  //用他的元素来取数据
          uint8_t data[28];          //用他来存帧头的数据
     } header;
-
+*/
     AP_HAL::UARTDriver *_port;                  // UART used to send data to FrSky receiver
     AP_SerialManager::SerialProtocol _protocol; // protocol used - detected using SerialManager's SERIAL#_PROTOCOL parameter
 

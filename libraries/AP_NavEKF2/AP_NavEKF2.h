@@ -354,6 +354,23 @@ public:
 
     // check if external navigation is being used for yaw observation
     bool isExtNavUsedForYaw(void) const;
+/*FOR MTIG   by huhui******************************************
+    void set_mti_attitude(Vector3f mti_attitude){_mti_attitude=mti_attitude;}
+
+    bool use_mti() const {return _use_mti;}
+
+    Vector3f get_mti_accel_bf() const {return _mti_accel_bf;}//body
+
+    void set_mti_accel_bf(Vector3f mti_accel_bf) {_mti_accel_bf=mti_accel_bf;}
+
+    Vector3f get_mti_gyro()const {return _mti_gyro_rad;}
+
+    void set_mti_gyro(Vector3f mti_gyro_rad){_mti_gyro_rad=mti_gyro_rad;}
+
+    Vector3f get_mti_velocity_ef()const {return _mti_velocity_ef;}
+
+    void set_mti_velocity_ef(Vector3f mti_velocity_ef){_mti_velocity_ef=mti_velocity_ef;}
+*******************************************************************/
 
 private:
     uint8_t num_cores; // number of allocated cores
@@ -515,4 +532,11 @@ private:
     void Log_Write_NKF5(uint64_t time_us) const;
     void Log_Write_Quaternion(uint8_t core, LogMessages msg_id, uint64_t time_us) const;
     void Log_Write_Beacon(uint64_t time_us) const;
+ /*******************************for MTIG by hu hui
+   bool _use_mti;
+        Vector3f _mti_attitude;//rad
+        Vector3f _mti_accel_bf;//m/s^2 NED body
+        Vector3f _mti_gyro_rad;
+        Vector3f _mti_velocity_ef;//m/s NED ef
+************************************************/
 };

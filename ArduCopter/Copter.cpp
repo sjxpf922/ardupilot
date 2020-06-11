@@ -496,7 +496,7 @@ void Copter::update_simple_mode(void)
 {
     float rollx, pitchx;
 
-    // exit immediately if no new radio frame or not in simple mode
+    // exit immediately if no new radio frame or not in simple mode  如果没有新的PWM输入/不在简单模式立马退出
     if (ap.simple_mode == 0 || !ap.new_radio_frame) {
         return;
     }

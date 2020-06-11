@@ -75,7 +75,7 @@ private:
         // 3
         uint8_t headerlength;
         // 4
-        uint16_t messageid;
+        uint16_t messageid;//第五个字节为数据id
         // 6
         uint8_t messagetype;
         //7

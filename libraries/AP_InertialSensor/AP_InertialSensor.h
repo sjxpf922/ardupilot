@@ -332,9 +332,21 @@ public:
         AP_Int8 push_interval_ms;
 
         // end Parameters
+//******************************by huhui************************//
+        void set_mti_raw_flag(bool flag){_use_mti_rawdata=flag;}
+        bool use_raw_mti()const{return _use_mti_rawdata;}
+        const Vector3f &mti_gyro()const{return _mti_gyro_rad;}
+        const Vector3f &mti_accel()const{return _mti_accel_bf;}
+        void set_mti_gyro(Vector3f mti_gyro_rad){_mti_gyro_rad=mti_gyro_rad;}
+        void set_mti_accel(Vector3f mti_accel_bf){_mti_accel_bf=mti_accel_bf;}
 
+//***********************************************************//
     private:
-
+//*********************************by huhui***************//
+        bool _use_mti_rawdata;
+        Vector3f _mti_gyro_rad;
+        Vector3f _mti_accel_bf;
+//********************************************************//
         enum batch_opt_t {
             BATCH_OPT_SENSOR_RATE = (1<<0),
             BATCH_OPT_POST_FILTER = (1<<1),

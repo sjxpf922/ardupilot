@@ -8,23 +8,25 @@
 
 #include <AP_TestUart/AP_TestUart.h>
 #include <stdio.h>
+#include <GCS_MAVLink/GCS.h>
 
 
 extern const AP_HAL::HAL& hal;
 
 
-/*
 
+//construct
 AP_TestUart::AP_TestUart(void)
 {
     _protocol = AP_SerialManager::SerialProtocol_None; //默认初始化为没有
     _port = NULL;                                      //默认初始化为空
     airspeed = 0.0;
+
 }
 
- * init - perform required initialisation
- */
-/*
+ /* init - perform required initialisation*/
+
+
 bool AP_TestUart::init()
 {
     const AP_SerialManager &serial_manager = AP::serialmanager();
@@ -42,7 +44,137 @@ bool AP_TestUart::init()
 
 }
 
+bool AP_TestUart :: Read_Serial(void)
+{
+    if(_port == NULL)
+        return false;
+    uint32_t num = _port->available();
+    while(num)
+    {
+        uint8_t data = _port -> read();
+        Serialdata_parsing(data);
+        num --;
+    }
 
+    return true;
+}
+
+void AP_TestUart :: Serialdata_parsing(uint8_t temp)
+{
+    static uint16_t p_data = 0;
+    static uint16_t p_dcrc = 0;
+    switch (Serial5_msg.state)
+        {
+            default:
+            case HEAR::PREAMBLE1:
+             if(temp == UART_PREAMBLE1)
+                 Serial5_msg.state = HEAR::PREAMBLE2;
+             //_port->printf("找到帧头1\n");
+             break;
+            case HEAR::PREAMBLE2:
+                if(temp == UART_PREAMBLE2)
+                    {Serial5_msg.state = HEAR::HEADERLENGTH;
+                    // _port->printf("找到帧头2");
+                    }
+                else
+                    Serial5_msg.state = HEAR::PREAMBLE1;
+                break;
+            case HEAR::HEADERLENGTH:
+                Serial5_msg.header.data[0]=UART_PREAMBLE1;
+                Serial5_msg.header.data[1]=UART_PREAMBLE2;
+                Serial5_msg.header.data[2]=temp;
+                Serial5_msg.header._header.headerlength = temp;
+                Serial5_msg.read = 3; //已读三个数据
+                if(Serial5_msg.read >= Serial5_msg.header._header.headerlength)
+                    {
+                        Serial5_msg.state = HEAR::DATA;
+                       // _port->printf("开始收数据\n");
+                    }
+                break;
+            case HEAR::DATA:
+                Serial5_msg.read++;
+                if(Serial5_msg.read >= sizeof(Serial5_msg.valid_data))
+                {
+                    _port->printf("数据长度超过数据存储重新找帧头");
+                    Serial5_msg.state = HEAR::PREAMBLE1;
+                }
+                if(Serial5_msg.read<=11)
+                {
+                    if(Serial5_msg.read==11)
+                    {
+                        Serial5_msg.state = HEAR::_CRC;
+                       // _port->printf("进入校验");
+
+                    }
+
+                    Serial5_msg.valid_data.bytes[ p_data++] = temp;
+                   // _port->printf("%x\n",temp);
+                    Serial5_msg.header._header.crc += (uint32_t)temp;
+               }
+               // _port->printf("计算校验和 ：%d\n",Serial5_msg.header._header.crc);
+                break;
+
+
+            case HEAR::_CRC:
+                Serial5_msg.read ++;
+               // _port->printf("进入校验_CRC\n");
+                if(Serial5_msg.read<=15)
+                {
+
+                   // _port->printf("read = %d\n",Serial5_msg.read);
+                    Serial5_msg._msgcrs.data[p_dcrc++]=temp;
+                   // _port->printf("%x\n",temp);
+
+                    if(Serial5_msg.read==15)
+                    {
+                       // _port->printf("最后校验和 ：%d\n",Serial5_msg._msgcrs._crc);
+                        _port->printf("read = 15\n");
+                        if(Serial5_msg._msgcrs._crc==Serial5_msg.header._header.crc)
+                        {
+                            _port->printf("校验成功\n");
+                            _port->printf("高度：%f 速度 :%f\n",Serial5_msg.valid_data._parsingdata.height,Serial5_msg.valid_data._parsingdata.velocity);
+                            process_message(); //取出数据去给公有变量，供外部调用；
+                            p_data=0;
+                            p_dcrc=0;
+                           Serial5_msg.read = 0;
+                           Serial5_msg.header._header.crc = 0;
+                           Serial5_msg.state = HEAR::PREAMBLE1;
+                           _port->printf("开始下一帧\n");
+                        }
+                        else
+                        {
+                            _port->printf("data fail");
+                            p_data=0;
+                            p_dcrc=0;
+                            Serial5_msg.read = 0;
+
+                            Serial5_msg.state = HEAR::PREAMBLE1;
+                            _port->printf("开始下一帧\n");
+
+                        }
+
+                    }
+
+
+                }
+                break;
+
+
+
+        }
+}
+
+
+
+void AP_TestUart ::process_message()
+{
+    Speed = Serial5_msg.valid_data._parsingdata.velocity;
+    Height = Serial5_msg.valid_data._parsingdata.height;
+}
+
+
+
+//ASCII转float
 float AP_TestUart:: Asc_to_f(volatile unsigned char *str)
 {
     signed char temp, flag1, flag2;
@@ -76,10 +208,10 @@ float AP_TestUart:: Asc_to_f(volatile unsigned char *str)
     value *= count * flag1; //符号位
     return (value);
 }
-*/
-/*
 
 
+
+// 用ascii码的形式改变空速
 float AP_TestUart::loop(void)
 {
     if(_protocol != AP_SerialManager::SerialProtocol_TestUart || _port ==NULL)  //如果飞控并没有指派哪个串口连接，则返回false
@@ -119,9 +251,10 @@ float AP_TestUart :: ChangeSpeed(void)
     return airspeed = chartofloat.speed;
 }
 
-*/
 
-/*bool AP_TestUart :: read(void)
+/*
+
+bool AP_TestUart :: read(void)
 {
 
     if( _port ==NULL)  //如果飞控并没有指派哪个串口连接，则返回false
@@ -134,8 +267,8 @@ float AP_TestUart :: ChangeSpeed(void)
      return true;
 
 }
-
-
+*/
+/*
 bool AP_TestUart::parse(uint8_t temp)
 {
     switch (UART_msg.hear_state)

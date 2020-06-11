@@ -165,6 +165,24 @@ public:
         uint32_t rtk_accuracy;             ///< Current estimate of 3D baseline accuracy (receiver dependent, typical 0 to 9999)
         int32_t  rtk_iar_num_hypotheses;   ///< Current number of integer ambiguity hypotheses
     };
+/**********************by huhui***************************
+#if GPS_MAX_INSTANCES == 3
+#   define _GPS_STATE(instance) state[0]
+#   define _GPS_TIMING(instance) timing[0]
+#else
+#   define _GPS_STATE(instance) state[instance]
+#   define _GPS_TIMING(instance) timing[instance]
+#endif
+
+    void set_mti_location(int32_t longtitude,int32_t latitude,float altitude);
+    bool have_mti_gps;
+    void set_gps_fail(void){_GPS_STATE(0).status=NO_GPS;have_mti_gps=false;}
+    bool stable_gps;
+    uint32_t stable_gps_time;
+    void set_stable_gps_time();
+    void set_mti_velocity(Vector3f mti_velocity);
+    void set_fix_time();
+************************************************************/
 
     /// Startup initialisation.
     void init(const AP_SerialManager& serial_manager);

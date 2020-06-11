@@ -110,10 +110,10 @@ AP_GPS_NOVA::parse(uint8_t temp)
             break;
         case nova_msg_parser::HEADERLENGTH:
             Debug("NOVA HEADERLENGTH\n");
-            nova_msg.header.data[0] = NOVA_PREAMBLE1; //开始存储数据
+            nova_msg.header.data[0] = NOVA_PREAMBLE1;
             nova_msg.header.data[1] = NOVA_PREAMBLE2;
-            nova_msg.header.data[2] = NOVA_PREAMBLE3;
-            nova_msg.header.data[3] = temp;
+            nova_msg.header.data[2] = NOVA_PREAMBLE3;//前三个字节存储帧头 从结构体的排序可以看出
+            nova_msg.header.data[3] = temp;          //第四个字节为帧头
             nova_msg.header.nova_headeru.headerlength = temp;//帧头长度
             nova_msg.nova_state = nova_msg_parser::HEADERDATA;
             nova_msg.read = 4;  //读了四个数据
@@ -124,7 +124,7 @@ AP_GPS_NOVA::parse(uint8_t temp)
                 nova_msg.nova_state = nova_msg_parser::PREAMBLE1; //重新找帧头
                 break;
             }
-            nova_msg.header.data[nova_msg.read] = temp;//从data[4]开始存储以后要解析的数据 第五个数据
+            nova_msg.header.data[nova_msg.read] = temp;//从data[4]开始存储以后要解析的数据 第五个数据 数据id
             nova_msg.read++;
             if (nova_msg.read >= nova_msg.header.nova_headeru.headerlength) //说明已经进入有效数据接收了
             {

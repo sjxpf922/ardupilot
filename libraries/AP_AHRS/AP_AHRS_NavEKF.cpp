@@ -579,7 +579,7 @@ bool AP_AHRS_NavEKF::get_secondary_position(struct Location &loc) const
     }
 }
 
-// EKF has a better ground speed vector estimate
+// EKF has a better ground speed vector estimate 地速估计
 Vector2f AP_AHRS_NavEKF::groundspeed_vector(void)
 {
     Vector3f vec;
@@ -612,7 +612,7 @@ Vector2f AP_AHRS_NavEKF::groundspeed_vector(void)
 
 // set the EKF's origin location in 10e7 degrees.  This should only
 // be called when the EKF has no absolute position reference (i.e. GPS)
-// from which to decide the origin on its own
+// from which to decide the origin on its own //原点
 bool AP_AHRS_NavEKF::set_origin(const Location &loc)
 {
     const bool ret2 = EKF2.setOriginLLH(loc);
@@ -677,7 +677,7 @@ bool AP_AHRS_NavEKF::get_velocity_NED(Vector3f &vec) const
     }
 }
 
-// returns the expected NED magnetic field
+// returns the expected NED magnetic field  获取磁场范围
 bool AP_AHRS_NavEKF::get_mag_field_NED(Vector3f &vec) const
 {
     switch (active_EKF_type()) {
@@ -753,7 +753,7 @@ bool AP_AHRS_NavEKF::get_vert_pos_rate(float &velocity) const
     }
 }
 
-// get latest height above ground level estimate in metres and a validity flag
+// get latest height above ground level estimate in metres and a validity flag  获取最后一次高度
 bool AP_AHRS_NavEKF::get_hagl(float &height) const
 {
     switch (active_EKF_type()) {
@@ -780,7 +780,7 @@ bool AP_AHRS_NavEKF::get_hagl(float &height) const
     }
 }
 
-// return a relative ground position to the origin in meters
+// return a relative ground position to the origin in meters  相对位置
 // North/East/Down order.
 bool AP_AHRS_NavEKF::get_relative_position_NED_origin(Vector3f &vec) const
 {

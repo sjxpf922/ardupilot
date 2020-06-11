@@ -23,21 +23,21 @@ void ModeAltHold::run()
 {
     float takeoff_climb_rate = 0.0f;
 
-    // initialize vertical speeds and acceleration
+    // initialize vertical speeds and acceleration   初始化最大垂直上升速度和z轴加速度
     pos_control->set_max_speed_z(-get_pilot_speed_dn(), g.pilot_speed_up);
     pos_control->set_max_accel_z(g.pilot_accel_z);
 
     // apply SIMPLE mode transform to pilot inputs
     update_simple_mode();
 
-    // get pilot desired lean angles
+    // get pilot desired lean angles  期望倾角
     float target_roll, target_pitch;
     get_pilot_desired_lean_angles(target_roll, target_pitch, copter.aparm.angle_max, attitude_control->get_althold_lean_angle_max());
 
-    // get pilot's desired yaw rate
+    // get pilot's desired yaw rate  期望偏航角速率
     float target_yaw_rate = get_pilot_desired_yaw_rate(channel_yaw->get_control_in());
 
-    // get pilot desired climb rate
+    // get pilot desired climb rate   期望爬上率
     float target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->get_control_in());
     target_climb_rate = constrain_float(target_climb_rate, -get_pilot_speed_dn(), g.pilot_speed_up);
 

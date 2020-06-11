@@ -49,7 +49,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(update_alt,             10,    200),
     SCHED_TASK(adjust_altitude_target, 10,    200),
 
-    SCHED_TASK(OneHz_PrintfPwm, 1,    100),
+    SCHED_TASK(OneHz_PrintfPwm, 400,    100),
 
 
 #if ADVANCED_FAILSAFE == ENABLED
@@ -692,7 +692,7 @@ float Plane::tecs_hgt_afe(void)
 
 void Plane::OneHz_PrintfPwm(void)
 {
-   // plane.TestUart.ChangeSpeed();
+    plane.TestUart.Read_Serial();
 }
 //****************************************************//
 #if OSD_ENABLED == ENABLED
