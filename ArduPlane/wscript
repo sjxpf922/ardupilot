@@ -34,6 +34,7 @@ def build(bld):
             'AC_AutoTune',
             'AP_KDECAN',
             'AP_TestUart',
+            'AP_Mti_G',
         ],
     )
 
