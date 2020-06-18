@@ -1,10 +1,10 @@
 
 /* 
-  TestUart _ 测试pixhawk 串口与电脑通讯  _by TongXueShi
+  MTi驱动测试 pixhawk   _by TongXueShi
 */
-#define AP_SERIALMANAGER_TestUart_BAUD        115200
-#define AP_SERIALMANAGER_TestUart_BUFSIZE_RX      64
-#define AP_SERIALMANAGER_TestUart_BUFSIZE_TX      64
+#define AP_SERIALMANAGER_MTi_G_BAUD        115200
+#define AP_SERIALMANAGER_MTi_G_BUFSIZE_RX      125
+#define AP_SERIALMANAGER_MTi_G_BUFSIZE_TX      125
 
 #include <AP_MTi_G/AP_MTi_G.h>
 #include <stdio.h>
@@ -13,23 +13,15 @@
 
 extern const AP_HAL::HAL& hal;
 
-
-
 //construct
-AP_MTi_G::AP_MTi_G(void) :
-       mti_state(0),
-       checksum(0),
-       MID(0),
-       MessLen(0),
-       readnum (0),
-       p_data(0),
-       DataId(0),
-       Data_Len(0),
-       mti_register(0)
+AP_MTi_G::AP_MTi_G(void):
+      checksum(0),
+      readnum(0),
+      p_data(0)
 {
     _protocol = AP_SerialManager::SerialProtocol_None; //默认初始化为没有
     _port = NULL;                                      //默认初始化为空
-
+    MTi.mti_state = HEAR::PREAMBLE1;
 }
 
  /* init - perform required initialisation*/
@@ -45,7 +37,7 @@ bool AP_MTi_G::init()
         // we don't want flow control for either protocol
         _port->set_flow_control(AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE);
         //Initialize the uart
-        _port->begin(AP_SERIALMANAGER_TestUart_BAUD,AP_SERIALMANAGER_TestUart_BUFSIZE_RX, AP_SERIALMANAGER_TestUart_BUFSIZE_TX);
+        _port->begin(AP_SERIALMANAGER_MTi_G_BAUD,AP_SERIALMANAGER_MTi_G_BUFSIZE_RX, AP_SERIALMANAGER_MTi_G_BUFSIZE_TX);
         return true;
     }
     return false;
@@ -60,8 +52,12 @@ bool AP_MTi_G :: Read_Mti_AHRS(void)
     while(num)
     {
         uint8_t data = _port -> read();
-        Mti_ReceiveData(data);
-        num --;
+
+      // hal.uartF->write(data);
+       // hal.uartF->printf("num = %ld\n",num);
+       Mti_ReceiveData(data);
+       num --;
+
     }
 
     return true;
@@ -69,140 +65,169 @@ bool AP_MTi_G :: Read_Mti_AHRS(void)
 
 void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
 {
-
-    switch(mti_state)
+   //hal.uartF->printf("temp = %x\n",temp);
+   switch(MTi.mti_state)
     {
-        case 0:
-           if(temp == 0XFA)
+
+       case HEAR::PREAMBLE1:
+           if(temp == 0xFA)
            {
-               mti_state = 1;
+               MTi.mti_state = HEAR::BUSID;
+               hal.uartF->printf("1\n");
                checksum = 0;
+             //  hal.uartF->printf("%d\n",MTi.mti_state);
            }
            break;
-        case 1 :
+        case HEAR::BUSID:
+          //  hal.uartF->printf("进入case2\n");
             if(temp == 0xFF)
             {
-                mti_state = 2;
+               // hal.uartF->printf("找到帧头2\n");
+                MTi.mti_state = HEAR::MESSAGEID;
                 checksum +=temp;
             }
             else
             {
                 if(temp == 0xFA)
                 {
-                    mti_state = 1;
-                    checksum = 0;
+                    MTi.mti_state = HEAR::BUSID;
+                   checksum = 0;
                 }
                 else
-                    {
-                        mti_state = 0;
-                        checksum = 0;
-                    }
+                {
+                    MTi.mti_state = HEAR::PREAMBLE1;
+                    checksum = 0;
+                }
             }
             break;
-        case 2 :
+        case HEAR::MESSAGEID :
             MID = temp;
             if(MID!= 0x36)
             {
-                mti_state = 0;
+                MTi.mti_state = HEAR::PREAMBLE1;
                 checksum = 0;
             }
-            mti_state = 3;
+            MTi.mti_state = HEAR::DATALENGTH;
             checksum += temp;
+           // hal.uartF->printf("找到数据ID\n");
             break;
-        case 3:
+        case HEAR::DATALENGTH:
+            //hal.uartF->printf("找到数据长度\n");
             MessLen = temp;
-            mti_state = 4;
+          //  hal.uartF->printf("MessLen = %d\n",MessLen);
+            MTi.mti_state = HEAR::DATAID;
             checksum += temp;
             p_data = 0;
             break;
-        case 4:
+        case HEAR::DATAID:
             checksum += temp;
             readnum += 1;       //开始接收有效数据
             buff[p_data++] = temp;
             if(p_data == 2)
             {
                 if(buff[0] == 0x20&& buff[1] == 0x30 )
-                {
+                {  // hal.uartF->printf("找到姿态数据\n");
                     DataId = Attitude_Angle;
-                    mti_state = 5;
+                    MTi.mti_state = HEAR::DATALEN;
                     p_data = 0;
                 }
                 else if(buff[0] == 0x40&& buff[1] == 0x20)
-                {
+                {  // hal.uartF->printf("找到加速度数据\n");
                     DataId = Accel;
-                    mti_state = 5;
+                    MTi.mti_state = HEAR::DATALEN;
                     p_data = 0;
                 }
                 else if(buff[0] == 0x80&& buff[1] == 0x20)
-                {
+                { //hal.uartF->printf("找到角速度数据\n");
                     DataId = Turn_Rate;
-                    mti_state = 5;
+                    MTi.mti_state = HEAR::DATALEN;
                     p_data = 0;
                 }
                 else if(buff[0] == 0xD0&& buff[1] == 0x13)
-                {
+                { // hal.uartF->printf("找到速度数据\n");
                    DataId = Velocity;
-                   mti_state = 5;
+                   MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
                 else if(buff[0] == 0x50&& buff[1] == 0x23)
-                {
+                { // hal.uartF->printf("找到高度数据\n");
                    DataId = Altitude;
-                   mti_state = 5;
+                   MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
                 else if(buff[0] == 0x50&& buff[1] == 0x43)
-                {
+                { // hal.uartF->printf("找到经纬高数据\n");
                    DataId = Lng_Lat;
-                   mti_state = 5;
+                   MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
                 else if(buff[0] == 0x30&& buff[1] == 0x10)
-                {
+                { // hal.uartF->printf("找到气压数据\n");
                    DataId = Air_Pressure;
-                   mti_state = 5;
+                   MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
                 else if(buff[0] == 0x08&& buff[1] == 0x10)
-                {
+                { // hal.uartF->printf("找到温度数据\n");
                    DataId = Tempeature;
-                   mti_state = 5;
+                   MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
                 else
                     p_data = 0;
             }
             break;
-        case 5:
+        case HEAR::DATALEN:
             readnum += 1;
             checksum += temp;
-            mti_state = 6;
+            MTi.mti_state = HEAR::DATA;
             Data_Len = temp;
             break;
-        case 6:
+        case HEAR::DATA:
             readnum += 1;
             checksum += temp;
             buff[p_data++] = temp;
-            if(p_data >= Data_Len)
+            if(p_data == Data_Len)
             {
-
+               // hal.uartF->printf("进入checksum\n");
                 Mti_Parsing(DataId,buff,Data_Len);
                 p_data = 0;
-                mti_state = 4;
+                if(readnum == MessLen)
+                {
+                   // hal.uartF->printf("有效数据读完\n");
+                    MTi.mti_state =  HEAR::CHECKSUM;
+                    readnum = 0;
+                }
+                else
+                {
+                   // hal.uartF->printf("有效数据未读完继续读\n");
+                    MTi.mti_state = HEAR::DATAID;
+                }
+
             }
             break;
+        case HEAR::CHECKSUM:
+            checksum +=temp;
+            hal.uartF->printf("%X\n",checksum);
+           if((checksum&0xff) == 0)
+            {
+                hal.uartF->printf("ok\n");
+                MTi.mti_state = HEAR::PREAMBLE1;
+                checksum = 0;
+               // hal.uartF->printf("最后的数据处理 并进入下一帧\n");
+                printf_data();
+                printf_serial5();
+            }
+           else
+           {
+               hal.uartF->printf("flase\n");
+               MTi.mti_state = HEAR::PREAMBLE1;
+               checksum = 0;
+               readnum = 0;
+           }
+           break;
         default:
-                break;
-    }
-    if(readnum >= MessLen)  //数据接收并解析完成
-    {
-        mti_state = 0;
-        readnum = 0;
-        if(checksum&&0xff == 0)
-        {
-            //push_messages();//还没写
-        }
-
+            break;
 
     }
 
@@ -274,7 +299,7 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
             MTI_ins.MTI_Gyr.y=-fchar[m++];
             MTI_ins.MTI_Gyr.z=-fchar[m++];
             mti_register|=0x04;
-            mti_state = 0; //暂时不理解
+           // MTi.mti_state = 0; //暂时不理解
             break;
         case Velocity:
             data_length=3;
@@ -366,8 +391,27 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
 
 }
 
+//向地面站发送数据
+void AP_MTi_G::printf_data(void)
+{
+    gcs().send_text(MAV_SEVERITY_CRITICAL," acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
+    gcs().send_text(MAV_SEVERITY_CRITICAL," gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
+    gcs().send_text(MAV_SEVERITY_CRITICAL," Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
 
+    gcs().send_text(MAV_SEVERITY_CRITICAL," pitch = %f\n roll = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
+    gcs().send_text(MAV_SEVERITY_CRITICAL," T = %f\n",MTI_ins.MTI_temp);
 
+}
+
+//向串口发送数据
+void AP_MTi_G :: printf_serial5(void)
+{
+    hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
+    hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
+    hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
+    hal.uartF->printf(" pitch = %f\n roll = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
+    hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
+}
 int AP_MTi_G::wrap_360_cd_yaw(int yaw_change)
 {
     if(yaw_change<=0) return -yaw_change;

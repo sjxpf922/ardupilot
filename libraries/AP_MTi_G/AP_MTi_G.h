@@ -39,21 +39,24 @@ public:
     bool Read_Mti_AHRS(void);
     void Mti_ReceiveData(uint8_t temp);
     void Mti_Parsing(uint8_t Id,uint8_t * data,uint8_t Len);
+    void printf_data(void);
     int wrap_360_cd_yaw(int yaw_change);
-private:
+    void  printf_serial5(void);
+   private:
 
     static const uint8_t UART_PREAMBLE1 = 0xaa;  //数据帧头 1
     static const uint8_t UART_PREAMBLE2 = 0x44;    //2
     static const uint8_t DataId1 = 0x50;  //速度数据ID
     static const uint8_t DataId2 = 0x55;  //高度数据ID
 
-    uint8_t mti_state;             //状态标志位
-    uint8_t checksum;              //校验和
+    //uint8_t mti_state;             //
+    uint16_t checksum;              //校验和
     uint8_t MID;                   //Message identifier
     uint8_t MessLen;              //有效数据长度
     int readnum ;                 //所有有效数据（从DATA开始）的个数（字节）
     uint8_t p_data;               //数据id的个数0-254;
     uint8_t buff[255];              //
+    uint8_t Data[255];            //用于存放收来的数据 然后整体处理
     uint8_t DataId ;              //数据ID
     uint8_t Data_Len;             //每种类型的数据长度
     uint8_t  mti_register;        //用于标注信息类型
@@ -69,6 +72,19 @@ private:
             Tempeature        ,  //温度
 
     };
+    struct PACKED HEAR{
+        enum{
+                PREAMBLE1 = 0,
+                BUSID,
+                MESSAGEID,
+                DATALENGTH,//数据总长度
+                DATAID,
+                DATALEN,  //每一种数据的长度
+                DATA,
+                CHECKSUM,
+
+            }mti_state;//状态标志位
+    } MTi;
     struct  {
             Vector3f  MTI_acce;  //m/s^2  NED body
             Vector3f  MTI_Gyr;   //rad/s

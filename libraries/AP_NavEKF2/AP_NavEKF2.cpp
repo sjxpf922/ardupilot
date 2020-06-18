@@ -846,7 +846,7 @@ bool NavEKF2::all_cores_healthy(void) const
 
 // returns the index of the primary core
 // return -1 if no primary core selected
-int8_t NavEKF2::getPrimaryCoreIndex(void) const
+int8_t NavEKF2::getPrimaryCoreIndex(void) const   //优先性？
 {
     if (!core) {
         return -1;
@@ -856,7 +856,7 @@ int8_t NavEKF2::getPrimaryCoreIndex(void) const
 
 // returns the index of the IMU of the primary core
 // return -1 if no primary core selected
-int8_t NavEKF2::getPrimaryCoreIMUIndex(void) const
+int8_t NavEKF2::getPrimaryCoreIMUIndex(void) const  //IMU的选择优先性
 {
     if (!core) {
         return -1;
