@@ -55,7 +55,7 @@ bool AP_MTi_G :: Read_Mti_AHRS(void)
 
       // hal.uartF->write(data);
        // hal.uartF->printf("num = %ld\n",num);
-       Mti_ReceiveData(data);
+      Mti_ReceiveData(data);
        num --;
 
     }
@@ -73,7 +73,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
            if(temp == 0xFA)
            {
                MTi.mti_state = HEAR::BUSID;
-               hal.uartF->printf("1\n");
+            //   hal.uartF->printf("1\n");
                checksum = 0;
              //  hal.uartF->printf("%d\n",MTi.mti_state);
            }
@@ -208,10 +208,10 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
             break;
         case HEAR::CHECKSUM:
             checksum +=temp;
-            hal.uartF->printf("%X\n",checksum);
+          //  hal.uartF->printf("%X\n",checksum);
            if((checksum&0xff) == 0)
             {
-                hal.uartF->printf("ok\n");
+               // hal.uartF->printf("ok\n");
                 MTi.mti_state = HEAR::PREAMBLE1;
                 checksum = 0;
                // hal.uartF->printf("最后的数据处理 并进入下一帧\n");
@@ -262,7 +262,7 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                 }
                 fchar[mti_packet++]=MtiData.Mti_a;    //循环把xyz的数据(已经是float数据了)存放在fchar[]
             }
-            MTI_ins.MTI_attitude.x= fchar[m++]*DEG_TO_RAD_MTI;  //fchar[0]  这样就取出了8个  最多才放18个，现在要取出 8*3？
+            MTI_ins.MTI_attitude.x= fchar[m++]*DEG_TO_RAD_MTI;  //fchar[0]
             MTI_ins.MTI_attitude.y=-fchar[m++]*DEG_TO_RAD_MTI;  //fchar[1]
             MTI_ins.MTI_attitude.z=wrap_360_cd_yaw(fchar[m++]-90)*DEG_TO_RAD_MTI; //fchar[2]
             mti_register|=0x01;
@@ -398,7 +398,7 @@ void AP_MTi_G::printf_data(void)
     gcs().send_text(MAV_SEVERITY_CRITICAL," gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
     gcs().send_text(MAV_SEVERITY_CRITICAL," Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
 
-    gcs().send_text(MAV_SEVERITY_CRITICAL," pitch = %f\n roll = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
+    gcs().send_text(MAV_SEVERITY_CRITICAL," roll = %f\n pitch = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
     gcs().send_text(MAV_SEVERITY_CRITICAL," T = %f\n",MTI_ins.MTI_temp);
 
 }
@@ -406,11 +406,17 @@ void AP_MTi_G::printf_data(void)
 //向串口发送数据
 void AP_MTi_G :: printf_serial5(void)
 {
-    hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
-    hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
-    hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
-    hal.uartF->printf(" pitch = %f\n roll = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
-    hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
+    static int n =0;
+    n++;
+    if(n >=100)
+    {
+        hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
+        hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
+        hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
+        hal.uartF->printf(" roll = %f\n pitch = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
+        hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
+        n=0;
+    }
 }
 int AP_MTi_G::wrap_360_cd_yaw(int yaw_change)
 {
