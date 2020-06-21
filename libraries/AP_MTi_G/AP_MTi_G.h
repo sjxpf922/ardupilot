@@ -42,6 +42,38 @@ public:
     void printf_data(void);
     int wrap_360_cd_yaw(int yaw_change);
     void  printf_serial5(void);
+    void Mtidata_push(void); //将私有成员的数据转到公用
+
+    void set_mti_acc(Vector3f mti_acce){ MTI_EKF._MTI_acce = mti_acce ;}
+    Vector3f get_mti_acc(void)const{return MTI_EKF._MTI_acce;}
+
+    void set_mti_gyr(Vector3f mti_gyr){MTI_EKF._MTI_Gyr = mti_gyr;}
+    Vector3f get_mti_gyr(void)const{return MTI_EKF._MTI_Gyr;}
+
+    void set_mti_attitude(Vector3f mti_attitude){MTI_EKF._MTI_attitude = mti_attitude;}
+    Vector3f get_mti_attitude(void)const{return MTI_EKF._MTI_attitude;}
+
+    void set_mti_velocity(Vector3f mti_velocity){MTI_EKF._MTI_Velocity = mti_velocity;}
+    Vector3f get_mti_velocity(void)const{return MTI_EKF._MTI_Velocity;}
+
+    void set_mti_location(int32_t mti_lat , int32_t mti_lon, double mti_alt ){MTI_EKF._MTI_Lat = mti_lat;MTI_EKF._MTI_Lon = mti_lon ; MTI_EKF._MTI_Alt = mti_alt;}
+
+    void set_mti_pressure(double mti_pressure){MTI_EKF._MTI_pressure = mti_pressure;}
+
+    struct  {
+               Vector3f  _MTI_acce;  //m/s^2  NED body
+               Vector3f  _MTI_Gyr;   //rad/s
+               Vector3f  _MTI_attitude;//rad
+               Vector3f  _MTI_Velocity;//m/s  NED ef
+               Vector3f  _MTI_magn;
+               int32_t   _MTI_Lat;//*10e7
+               int32_t   _MTI_Lon;//*10e7
+               double    _MTI_Alt;//cm
+               double    _MTI_pressure;
+               float     _MTI_temp;
+           }  MTI_EKF;
+
+
    private:
 
     static const uint8_t UART_PREAMBLE1 = 0xaa;  //数据帧头 1
@@ -70,7 +102,6 @@ public:
             Lng_Lat           ,  //经纬高
             Air_Pressure      ,  //气压
             Tempeature        ,  //温度
-
     };
     struct PACKED HEAR{
         enum{

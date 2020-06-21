@@ -843,7 +843,7 @@ private:
     void Log_Write_Vehicle_Startup_Messages();
     void Log_Write_AOA_SSA();
     void Log_Write_AETR();
-
+    void Log_Write_Mti_G();
     void load_parameters(void);
     void convert_mixers(void);
     void adjust_altitude_target();
