@@ -113,7 +113,14 @@ void RC_Channel_Plane::do_aux_function(const aux_func_t ch_option, const aux_swi
     case AUX_FUNC::RTL:
         do_aux_function_change_mode(Mode::Number::RTL, ch_flag);
         break;
-
+//by sjx 20200624
+    case AUX_FUNC ::CHANGEMTI:
+        if(ch_flag == MIDDLE)
+        {
+            plane.ahrs.set_mti_flag(true);
+        }
+        break;
+//
     default:
         RC_Channel::do_aux_function(ch_option, ch_flag);
         break;

@@ -106,10 +106,15 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     update_SITL();
 #endif
 
-    if (_ekf_type == 2) {
+    if(use_mti())
+    {
+        Get_MTi_Eular();
+        hal.uartF->printf("mti\n");
+    }
+    else if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
-        update_EKF2(); //先更新EKF2 否则反之
+        update_EKF2();
         update_EKF3();
     } else {
         // otherwise run EKF3 first
@@ -180,7 +185,6 @@ void AP_AHRS_NavEKF::update_EKF2(void)
             roll  = eulers.x;
             pitch = eulers.y;
             yaw   = eulers.z;
-
             update_cd_values();
             update_trig();//更新姿态角的三角余弦值
 
@@ -305,6 +309,13 @@ void AP_AHRS_NavEKF::update_EKF3(void)
         }
     }
 }
+//by sjx 20200623
+void AP_AHRS_NavEKF::Get_MTi_Eular(void)
+{
+    roll  = Mti_G.MTI_EKF._MTI_attitude.x;
+    pitch = Mti_G.MTI_EKF._MTI_attitude.y;
+    yaw   = Mti_G.MTI_EKF._MTI_attitude.z;
+}
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 void AP_AHRS_NavEKF::update_SITL(void)
@@ -418,8 +429,8 @@ bool AP_AHRS_NavEKF::get_position(struct Location &loc) const
 {
     switch (active_EKF_type()) {
     case EKF_TYPE_NONE:
-        return AP_AHRS_DCM::get_position(loc);
-
+      //  return AP_AHRS_DCM::get_position(loc);
+        break;
     case EKF_TYPE2:
         if (EKF2.getLLH(loc)) {
             return true;
@@ -1836,6 +1847,5 @@ bool AP_AHRS_NavEKF::is_ext_nav_used_for_yaw(void) const
         return false; 
     }
 }
-
 #endif // AP_AHRS_NAVEKF_AVAILABLE
 

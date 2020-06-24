@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <GCS_MAVLink/GCS.h>
 
-
 extern const AP_HAL::HAL& hal;
 
 //construct
@@ -72,7 +71,6 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         readnum=0;
         if((checksum&0xff)==0)
         {
-            printf_serial5();
             Mtidata_push();
         }
     }
@@ -371,33 +369,6 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
 
 }
 
-//向地面站发送数据
-void AP_MTi_G::printf_data(void)
-{
-    gcs().send_text(MAV_SEVERITY_CRITICAL," acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
-    gcs().send_text(MAV_SEVERITY_CRITICAL," gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
-    gcs().send_text(MAV_SEVERITY_CRITICAL," Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
-
-    gcs().send_text(MAV_SEVERITY_CRITICAL," roll = %f\n pitch = %f\n yaw = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
-    gcs().send_text(MAV_SEVERITY_CRITICAL," T = %f\n",MTI_ins.MTI_temp);
-
-}
-
-//向串口发送数据
-void AP_MTi_G :: printf_serial5(void)
-{
-    static int n =0;
-    n++;
-    if(n >=100)
-    {
-        hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
-        hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
-        hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
-        hal.uartF->printf(" roll = %f\n pitch = %f\n yaw = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
-        hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
-        n=0;
-    }
-}
 int AP_MTi_G::wrap_360_cd_yaw(int yaw_change)
 {
     if(yaw_change<=0) return -yaw_change;
@@ -412,5 +383,21 @@ void AP_MTi_G:: Mtidata_push(void)
     set_mti_velocity(MTI_ins.MTI_Velocity);
     set_mti_location(MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_Alt);
     set_mti_pressure(MTI_ins.MTI_pressure);
-
 }
+//获取MTi传感器的位置信息
+void AP_MTi_G :: Get_MTi_Loc(struct Location & loc)const
+{
+    loc.alt = MTI_ins.MTI_Alt;
+    loc.lat = MTI_ins.MTI_Lat;
+    loc.lng = MTI_ins.MTI_Lon;
+}
+/*
+void AP_MTi_G :: Get_MTi_Euler(void)
+{
+    Ap_ahrs.roll  = MTI_ins.MTI_attitude.x;
+    Ap_ahrs.pitch = MTI_ins.MTI_attitude.y;
+    Ap_ahrs.yaw   = MTI_ins.MTI_attitude.z;
+}
+
+*/
+

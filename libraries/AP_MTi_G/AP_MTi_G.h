@@ -39,9 +39,7 @@ public:
     bool Read_Mti_AHRS(void);
     void Mti_ReceiveData(uint8_t temp);
     void Mti_Parsing(uint8_t Id,uint8_t * data,uint8_t Len);
-    void printf_data(void);
     int wrap_360_cd_yaw(int yaw_change);
-    void  printf_serial5(void);
     void Mtidata_push(void); //将私有成员的数据转到公用
 
     void set_mti_acc(Vector3f mti_acce){ MTI_EKF._MTI_acce = mti_acce ;}
@@ -59,7 +57,7 @@ public:
     void set_mti_location(int32_t mti_lat , int32_t mti_lon, double mti_alt ){MTI_EKF._MTI_Lat = mti_lat;MTI_EKF._MTI_Lon = mti_lon ; MTI_EKF._MTI_Alt = mti_alt;}
 
     void set_mti_pressure(double mti_pressure){MTI_EKF._MTI_pressure = mti_pressure;}
-
+    void Get_MTi_Loc(struct Location & loc)const;
     struct  {
                Vector3f  _MTI_acce;  //m/s^2  NED body
                Vector3f  _MTI_Gyr;   //rad/s

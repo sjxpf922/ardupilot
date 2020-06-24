@@ -334,8 +334,10 @@ private:
     ModeQAcro mode_qacro;
     ModeQAutotune mode_qautotune;
     ModeTakeoff mode_takeoff;
+//by sjx 20200624
     AP_TestUart TestUart;
     AP_MTi_G Mti_G;
+//
     // This is the state of the flight control system
     // There are multiple states defined such as MANUAL, FBW-A, AUTO
     Mode *control_mode = &mode_initializing;
@@ -1099,22 +1101,6 @@ private:
     static_assert(_failsafe_priorities[ARRAY_SIZE(_failsafe_priorities) - 1] == -1,
                   "_failsafe_priorities is missing the sentinel");
 
-
-/*
- * 测试用
-    struct {
-    float    aileron_pwm;
-    float    elevator_pwm;
-    float    throttle_pwm;            //油门
-    float    rudder_pwm;              //方向
-    float    MotorLeft_pwm;           //左电机
-    float    MotorRight_pwm;          //右电机
-    float    motor_tilt_pwm;          //中央倾转舵机
-    float    tiltMotorLeft_pwm  ;    //左矢量舵机
-    float    tiltMotorRight_pwm;     //右矢量舵机
-
-    } CH_PWM;
-    */
 public:
     void mavlink_delay_cb();
     void failsafe_check(void);

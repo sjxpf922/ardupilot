@@ -170,7 +170,7 @@ void Plane::ahrs_update()
     quadplane.check_yaw_reset();
 
     // update inertial_nav for quadplane
-    quadplane.inertial_nav.update();
+    quadplane.inertial_nav.update();  //跟新导航速度与位置
 }
 
 /*

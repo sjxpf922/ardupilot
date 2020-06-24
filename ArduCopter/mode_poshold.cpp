@@ -578,7 +578,7 @@ void ModePosHold::update_wind_comp_estimate()
 
     // check horizontal velocity is low
     if (inertial_nav.get_speed_xy() > POSHOLD_WIND_COMP_ESTIMATE_SPEED_MAX) {
-        return;
+        return;    //如果速度大于这个下限，那么就不进行风补偿了
     }
 
     // get position controller accel target
