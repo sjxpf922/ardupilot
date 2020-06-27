@@ -62,6 +62,7 @@ void AP_AHRS_View::update(bool skip_ins_update)
 {
     rot_body_to_ned = ahrs.get_rotation_body_to_ned();
     gyro = ahrs.get_gyro();
+    gcs().send_text(MAV_SEVERITY_CRITICAL,"%f %f %f\n",gyro.x,gyro.y,gyro.z);
 
     if (!is_zero(y_angle + _pitch_trim_deg)) {
         rot_body_to_ned = rot_body_to_ned * rot_view_T;

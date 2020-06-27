@@ -81,7 +81,7 @@ void RC_Channel_Plane::init_aux_function(const RC_Channel::aux_func_t ch_option,
 }
 }
 
-// do_aux_function - implement the function invoked by auxillary switches
+// do_aux_function - implement the function invoked by auxillary switches  实际调用
 void RC_Channel_Plane::do_aux_function(const aux_func_t ch_option, const aux_switch_pos_t ch_flag)
 {
     switch(ch_option) {
@@ -115,9 +115,13 @@ void RC_Channel_Plane::do_aux_function(const aux_func_t ch_option, const aux_swi
         break;
 //by sjx 20200624
     case AUX_FUNC ::CHANGEMTI:
-        if(ch_flag == MIDDLE)
+        if(ch_flag == MIDDLE || ch_flag == HIGH)
         {
             plane.ahrs.set_mti_flag(true);
+        }
+        else if(ch_flag == LOW)
+        {
+            plane.ahrs.set_mti_flag(false);
         }
         break;
 //

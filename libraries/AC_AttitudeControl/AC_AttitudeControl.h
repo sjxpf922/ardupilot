@@ -373,7 +373,7 @@ protected:
 
     // This represents the angular velocity of the target (setpoint) attitude used in
     // the attitude controller as an angular velocity vector, in radians per second in
-    // the target attitude frame.
+    // the target attitude frame. 它表示目标(设定点)姿态的角速度，在姿态控制器中用作角速度矢量，在目标姿态帧中以弧度/秒为单位
     Vector3f            _attitude_target_ang_vel;
 
     // This represents the angular velocity in radians per second in the body frame, used in the angular

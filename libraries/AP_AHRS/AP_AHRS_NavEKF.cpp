@@ -37,11 +37,14 @@ extern const AP_HAL::HAL& hal;
 // constructor
 AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
                                NavEKF3 &_EKF3,
+                               AP_MTi_G &_Mti_G,
                                Flags flags) :
     AP_AHRS_DCM(),
     EKF2(_EKF2),
     EKF3(_EKF3),
-    _ekf_flags(flags)
+    Mti_G(_Mti_G),
+    _ekf_flags(flags),
+    _use_mti(false)
 {
     _dcm_matrix.identity();
 }
@@ -50,7 +53,8 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
 {
     if (!active_EKF_type()) {
-        return AP_AHRS_DCM::get_gyro();
+       // return AP_AHRS_DCM::get_gyro();
+        return _gyro_estimate;
     }
     return _gyro_estimate;
 }
@@ -108,8 +112,14 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
 
     if(use_mti())
     {
-        Get_MTi_Eular();
-        hal.uartF->printf("mti\n");
+        Upata_Get_MTi();
+        static int num = 0;
+        num ++;
+        if(num >= 80)
+        {
+            Printf("use_mti\n");
+            num = 0;
+        }
     }
     else if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
@@ -310,11 +320,22 @@ void AP_AHRS_NavEKF::update_EKF3(void)
     }
 }
 //by sjx 20200623
-void AP_AHRS_NavEKF::Get_MTi_Eular(void)
+//获取MTi数据
+void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 {
-    roll  = Mti_G.MTI_EKF._MTI_attitude.x;
-    pitch = Mti_G.MTI_EKF._MTI_attitude.y;
-    yaw   = Mti_G.MTI_EKF._MTI_attitude.z;
+    Vector3f eulers;
+    Mti_G.getEulerAngles(eulers);
+    roll  = eulers.x;
+    pitch = eulers.y;
+    yaw   = eulers.z;
+    _gyro_estimate = Mti_G.get_mti_gyr();
+    static int num=0;
+    num ++;
+    if(num >=100)
+    {
+        Printf("A = %f\n B= %f\n C = %f\n",_gyro_estimate.x,_gyro_estimate.y,_gyro_estimate.z);
+        num = 0;
+    }
 }
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -430,6 +451,7 @@ bool AP_AHRS_NavEKF::get_position(struct Location &loc) const
     switch (active_EKF_type()) {
     case EKF_TYPE_NONE:
       //  return AP_AHRS_DCM::get_position(loc);
+        Mti_G.Get_MTi_Loc(loc);
         break;
     case EKF_TYPE2:
         if (EKF2.getLLH(loc)) {

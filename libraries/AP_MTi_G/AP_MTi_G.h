@@ -58,6 +58,8 @@ public:
 
     void set_mti_pressure(double mti_pressure){MTI_EKF._MTI_pressure = mti_pressure;}
     void Get_MTi_Loc(struct Location & loc)const;
+    void printf_serial5(void);
+    void getEulerAngles( Vector3f &eulers) const;
     struct  {
                Vector3f  _MTI_acce;  //m/s^2  NED body
                Vector3f  _MTI_Gyr;   //rad/s

@@ -34,7 +34,7 @@ class OpticalFlow;
 #define AP_AHRS_TRIM_LIMIT 10.0f        // maximum trim angle in degrees
 #define AP_AHRS_RP_P_MIN   0.05f        // minimum value for AHRS_RP_P parameter
 #define AP_AHRS_YAW_P_MIN  0.05f        // minimum value for AHRS_YAW_P parameter
-
+#define Printf(...)        hal.uartF->printf(__VA_ARGS__) //ºÚªØ¥Ú”°
 enum AHRS_VehicleClass : uint8_t {
     AHRS_VEHICLE_UNKNOWN,
     AHRS_VEHICLE_GROUND,

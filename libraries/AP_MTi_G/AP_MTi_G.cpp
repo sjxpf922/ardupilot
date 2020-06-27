@@ -72,6 +72,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         if((checksum&0xff)==0)
         {
             Mtidata_push();
+            printf_serial5();
         }
     }
    switch(MTi.mti_state)
@@ -390,6 +391,33 @@ void AP_MTi_G :: Get_MTi_Loc(struct Location & loc)const
     loc.alt = MTI_ins.MTI_Alt;
     loc.lat = MTI_ins.MTI_Lat;
     loc.lng = MTI_ins.MTI_Lon;
+}
+void AP_MTi_G :: printf_serial5(void)
+{
+    static int num = 0;
+    num ++;
+   if(num >= 80)
+   {
+      //  hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
+      //  hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
+      //  hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
+      //  hal.uartF->printf(" pitch = %f\n roll = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
+      //  hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
+       hal.uartF->printf(" roll_private = %f\n  roll_public = %f\n",MTI_ins.MTI_attitude.x,MTI_EKF._MTI_attitude.x);
+        num = 0;
+      }
+}
+
+void AP_MTi_G::getEulerAngles( Vector3f &eulers) const
+{
+    static  int num = 0;
+    num ++;
+    eulers = MTI_ins.MTI_attitude;
+    if(num >= 80)
+    {
+        hal.uartF->printf("getEulerAngles = %f\n",eulers.x);
+        num = 0;
+    }
 }
 /*
 void AP_MTi_G :: Get_MTi_Euler(void)

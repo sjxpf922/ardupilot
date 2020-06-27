@@ -462,7 +462,7 @@ bool AC_PosControl::is_active_z() const
 }
 
 /// update_z_controller - fly to altitude in cm above home
-void AC_PosControl::update_z_controller()
+void AC_PosControl::update_z_controller()  //更新z轴控制
 {
     // check time since last cast
     const uint64_t now_us = AP_HAL::micros64();
@@ -743,7 +743,7 @@ float AC_PosControl::get_lean_angle_max_cd() const
 ///     sets target roll angle, pitch angle and I terms based on vehicle current lean angles
 ///     should be called once whenever significant changes to the position target are made
 ///     this does not update the xy target
-void AC_PosControl::init_xy_controller()
+void AC_PosControl::init_xy_controller() //初始化水平位置控制器
 {
     // set roll, pitch lean angle targets to current attitude
     // todo: this should probably be based on the desired attitude not the current attitude
@@ -764,7 +764,7 @@ void AC_PosControl::init_xy_controller()
 }
 
 /// update_xy_controller - run the horizontal position controller - should be called at 100hz or higher
-void AC_PosControl::update_xy_controller()
+void AC_PosControl::update_xy_controller()     //更新水平位置控制器
 {
     // compute dt
     const uint64_t now_us = AP_HAL::micros64();
@@ -863,7 +863,7 @@ void AC_PosControl::init_vel_controller_xyz()
 /// update_velocity_controller_xy - run the velocity controller - should be called at 100hz or higher
 ///     velocity targets should we set using set_desired_velocity_xy() method
 ///     callers should use get_roll() and get_pitch() methods and sent to the attitude controller
-///     throttle targets will be sent directly to the motors
+///     throttle targets will be sent directly to the motors  更新速度控制器
 void AC_PosControl::update_vel_controller_xy()
 {
     // capture time since last iteration
@@ -945,7 +945,7 @@ void AC_PosControl::desired_accel_to_vel(float nav_dt)
 }
 
 /// desired_vel_to_pos - move position target using desired velocities
-void AC_PosControl::desired_vel_to_pos(float nav_dt)
+void AC_PosControl::desired_vel_to_pos(float nav_dt) //期望速度到目标位置
 {
     // range check nav_dt
     if (nav_dt < 0) {
@@ -961,11 +961,11 @@ void AC_PosControl::desired_vel_to_pos(float nav_dt)
     }
 }
 
-/// run horizontal position controller correcting position and velocity
-///     converts position (_pos_target) to target velocity (_vel_target)
-///     desired velocity (_vel_desired) is combined into final target velocity
-///     converts desired velocities in lat/lon directions to accelerations in lat/lon frame
-///     converts desired accelerations provided in lat/lon frame to roll/pitch angles
+/// run horizontal position controller correcting position and velocity 运行水平位置控制器 校准位置和速度
+///     converts position (_pos_target) to target velocity (_vel_target)  将目标位置转换到目标速度
+///     desired velocity (_vel_desired) is combined into final target velocity 期望速度合并到最终目标速度中
+///     converts desired velocities in lat/lon directions to accelerations in lat/lon frame  目标速度转到加速度
+///     converts desired accelerations provided in lat/lon frame to roll/pitch angles  加速度转到roll和pitch
 void AC_PosControl::run_xy_controller(float dt)
 {
     float ekfGndSpdLimit, ekfNavVelGainScaler;
@@ -1065,7 +1065,7 @@ void AC_PosControl::run_xy_controller(float dt)
     accel_to_lean_angles(_accel_target.x, _accel_target.y, _roll_target, _pitch_target);
 }
 
-// get_lean_angles_to_accel - convert roll, pitch lean angles to lat/lon frame accelerations in cm/s/s
+// get_lean_angles_to_accel - convert roll, pitch lean angles to（应该from吧） lat/lon frame accelerations in cm/s/s
 void AC_PosControl::accel_to_lean_angles(float accel_x_cmss, float accel_y_cmss, float& roll_target, float& pitch_target) const
 {
     float accel_right, accel_forward;
