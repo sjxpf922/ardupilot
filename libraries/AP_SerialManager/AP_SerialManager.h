@@ -114,6 +114,7 @@ public:
         SerialProtocol_SLCAN = 22,
         SerialProtocol_RCIN = 23,
         SerialProtocol_TestUart = 24,
+        SerialProtocol_MTIG_700 = 25,
     };
 
     // get singleton instance

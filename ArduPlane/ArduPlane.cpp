@@ -683,6 +683,7 @@ float Plane::tecs_hgt_afe(void)
 void Plane::first_loop(void)
 {
     plane.TestUart.ChangeSpeed();
+    plane.MTi_G.Read_Mti_AHRS();
 }
 
 #if OSD_ENABLED == ENABLED
