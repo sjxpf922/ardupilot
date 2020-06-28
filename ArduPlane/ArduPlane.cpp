@@ -48,6 +48,7 @@ const AP_Scheduler::Task Plane::scheduler_tasks[] = {
     SCHED_TASK(read_airspeed,          10,    100),
     SCHED_TASK(update_alt,             10,    200),
     SCHED_TASK(adjust_altitude_target, 10,    200),
+    SCHED_TASK(first_loop,            400,    100),
 #if ADVANCED_FAILSAFE == ENABLED
     SCHED_TASK(afs_fs_check,           10,    100),
 #endif
@@ -678,6 +679,10 @@ float Plane::tecs_hgt_afe(void)
         hgt_afe = relative_altitude;
     }
     return hgt_afe;
+}
+void Plane::first_loop(void)
+{
+    plane.TestUart.ChangeSpeed();
 }
 
 #if OSD_ENABLED == ENABLED

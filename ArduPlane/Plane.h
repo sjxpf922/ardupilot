@@ -28,7 +28,7 @@
 #include <cmath>
 #include <stdarg.h>
 #include <stdio.h>
-
+#include<AP_TestUart/AP_TestUart.h>
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Common/AP_Common.h>
 #include <AP_Param/AP_Param.h>
@@ -333,7 +333,7 @@ private:
     ModeQAcro mode_qacro;
     ModeQAutotune mode_qautotune;
     ModeTakeoff mode_takeoff;
-
+    AP_TestUart TestUart;
     // This is the state of the flight control system
     // There are multiple states defined such as MANUAL, FBW-A, AUTO
     Mode *control_mode = &mode_initializing;
@@ -922,6 +922,7 @@ private:
     void geofence_disable_and_send_error_msg(const char *errorMsg);
     void disarm_if_autoland_complete();
     float tecs_hgt_afe(void);
+    void first_loop(void);
     void set_nav_controller(void);
     void loiter_angle_reset(void);
     void loiter_angle_update(void);
