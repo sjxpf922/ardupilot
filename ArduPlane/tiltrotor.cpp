@@ -378,8 +378,8 @@ void QuadPlane::tiltrotor_bicopter(void)
     }
 
     if (!in_vtol_mode() && tiltrotor_fully_fwd()) {
-        SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  -SERVO_MAX);
-        SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, -SERVO_MAX);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  0);
+        SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, 0);
         return;
     }
 
@@ -408,8 +408,8 @@ void QuadPlane::tiltrotor_bicopter(void)
     tilt_right *= scaling;
 
     // add current tilt and constrain
-    tilt_left  = constrain_float(-(tilt.current_tilt * SERVO_MAX) + tilt_left,  -SERVO_MAX, SERVO_MAX);
-    tilt_right = constrain_float(-(tilt.current_tilt * SERVO_MAX) + tilt_right, -SERVO_MAX, SERVO_MAX);
+    tilt_left  = constrain_float(tilt_left,  -SERVO_MAX, SERVO_MAX);
+    tilt_right = constrain_float(tilt_right, -SERVO_MAX, SERVO_MAX);
 
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorLeft,  tilt_left);
     SRV_Channels::set_output_scaled(SRV_Channel::k_tiltMotorRight, tilt_right);
