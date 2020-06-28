@@ -43,7 +43,7 @@ bool AP_TestUart::init()
     return false;
 
 }
-
+/*
 bool AP_TestUart :: Read_Serial(void)
 {
     if(_port == NULL)
@@ -58,7 +58,7 @@ bool AP_TestUart :: Read_Serial(void)
 
     return true;
 }
-
+*/
 void AP_TestUart :: Serialdata_parsing(uint8_t temp)
 {
     static uint16_t p_data = 0;

@@ -72,7 +72,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         if((checksum&0xff)==0)
         {
             Mtidata_push();
-            printf_serial5();
+            //printf_serial5();
         }
     }
    switch(MTi.mti_state)
@@ -396,7 +396,7 @@ void AP_MTi_G :: printf_serial5(void)
 {
     static int num = 0;
     num ++;
-   if(num >= 80)
+   if(num >= 100)
    {
       //  hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
       //  hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
@@ -410,14 +410,7 @@ void AP_MTi_G :: printf_serial5(void)
 
 void AP_MTi_G::getEulerAngles( Vector3f &eulers) const
 {
-    static  int num = 0;
-    num ++;
-    eulers = MTI_ins.MTI_attitude;
-    if(num >= 80)
-    {
-        hal.uartF->printf("getEulerAngles = %f\n",eulers.x);
-        num = 0;
-    }
+      eulers = MTI_ins.MTI_attitude;
 }
 /*
 void AP_MTi_G :: Get_MTi_Euler(void)

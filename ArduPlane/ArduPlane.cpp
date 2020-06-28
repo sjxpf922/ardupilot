@@ -695,6 +695,7 @@ void Plane::OneHz_PrintfPwm(void)
    // plane.TestUart.Read_Serial();
    // plane.Mti_G.printf_data();
     plane.Mti_G.Read_Mti_AHRS();
+    plane.TestUart.ChangeSpeed();
 }
 //****************************************************//
 #if OSD_ENABLED == ENABLED

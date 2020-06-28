@@ -115,7 +115,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         Upata_Get_MTi();
         static int num = 0;
         num ++;
-        if(num >= 80)
+        if(num >= 200)
         {
             Printf("use_mti\n");
             num = 0;
@@ -126,10 +126,12 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         // priority
         update_EKF2();
         update_EKF3();
+        Printf("usingEKF2\n");
     } else {
         // otherwise run EKF3 first
         update_EKF3();
         update_EKF2();
+        Printf("usingEKF3\n");
     }
 
 #if AP_MODULE_SUPPORTED
@@ -331,9 +333,10 @@ void AP_AHRS_NavEKF::Upata_Get_MTi(void)
     _gyro_estimate = Mti_G.get_mti_gyr();
     static int num=0;
     num ++;
-    if(num >=100)
+    if(num >=200)
     {
-        Printf("A = %f\n B= %f\n C = %f\n",_gyro_estimate.x,_gyro_estimate.y,_gyro_estimate.z);
+        Printf("gx = %f\n gy= %f\n gz = %f\n",_gyro_estimate.x,_gyro_estimate.y,_gyro_estimate.z);
+        Printf("roll = %f\n pitch = %f\n yaw = %f\n",roll,pitch,yaw);
         num = 0;
     }
 }
