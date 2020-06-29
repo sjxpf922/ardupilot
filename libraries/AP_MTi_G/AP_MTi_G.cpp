@@ -64,7 +64,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         if((checksum&0xff)==0)
         {
             Mtidata_push();
-            printf_serial5();
+           // printf_serial5();
         }
     }
    switch(MTi.mti_state)
