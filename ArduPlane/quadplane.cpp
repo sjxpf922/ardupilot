@@ -796,13 +796,14 @@ void QuadPlane::init_stabilize(void)
 /*
   ask the multicopter attitude control to match the roll and pitch rates being demanded by the
   fixed wing controller if not in a pure VTOL mode
+  如果不是完全垂起模式固定翼控制器要求调用多轴姿态控制来适配滚转和俯仰
  */
 void QuadPlane::multicopter_attitude_rate_update(float yaw_rate_cds)
 {
     check_attitude_relax();
 
     // tailsitter-only bodyframe roll control options
-    if (is_tailsitter()) {
+    if (is_tailsitter()) {       //不会进来的
         if (tailsitter.input_type == TAILSITTER_INPUT_BF_ROLL_M) {
             // Angle mode attitude control for pitch and body-frame roll, rate control for yaw.
             // this version interprets the first argument as yaw rate and the third as roll angle

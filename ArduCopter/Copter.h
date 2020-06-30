@@ -24,9 +24,9 @@
 #include <cmath>
 #include <stdio.h>
 #include <stdarg.h>
-
+#include <AP_TestUart/AP_TestUart.h>
 #include <AP_HAL/AP_HAL.h>
-
+#include <AP_MTi_G/AP_MTi_G.h>//by_sjx
 // Common dependencies
 #include <AP_Common/AP_Common.h>
 #include <AP_Common/Location.h>
@@ -272,7 +272,8 @@ private:
     AP_Logger logger;
 
     AP_GPS gps;
-
+    AP_MTi_G Mti_G; //by_sjx
+    AP_TestUart TestUart;
     // flight modes convenience array
     AP_Int8 *flight_modes;
     const uint8_t num_flight_modes = 6;
@@ -319,7 +320,7 @@ private:
     // Inertial Navigation EKF
     NavEKF2 EKF2{&ahrs, rangefinder};
     NavEKF3 EKF3{&ahrs, rangefinder};
-    AP_AHRS_NavEKF ahrs{EKF2, EKF3, AP_AHRS_NavEKF::FLAG_ALWAYS_USE_EKF};
+    AP_AHRS_NavEKF ahrs{EKF2, EKF3,Mti_G, AP_AHRS_NavEKF::FLAG_ALWAYS_USE_EKF};
     AP_AHRS_View *ahrs_view;
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL

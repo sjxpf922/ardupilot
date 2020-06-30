@@ -540,6 +540,16 @@ void RC_Channel_Copter::do_aux_function(const aux_func_t ch_option, const aux_sw
             do_aux_function_change_mode(Mode::Number::DRIFT, ch_flag);
 #endif
             break;
+            //by sjx 20200624
+                case AUX_FUNC ::CHANGEMTI:
+                    if(ch_flag == MIDDLE || ch_flag == HIGH)
+                    {
+                        copter.ahrs.set_mti_flag(true);
+                    }
+                    else if(ch_flag == LOW)
+                    {
+                        copter.ahrs.set_mti_flag(false);
+                    }
 
     default:
         RC_Channel::do_aux_function(ch_option, ch_flag);

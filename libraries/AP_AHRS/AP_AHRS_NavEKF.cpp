@@ -104,7 +104,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         _ekf_type.set(2); //EKF1不再支持，设置为2
     }
 
-    update_DCM(skip_ins_update);//更新方向余弦矩阵
+    update_DCM(skip_ins_update);//更新方向余弦矩阵备用
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     update_SITL();
@@ -125,8 +125,14 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
         update_EKF2();
-        update_EKF3();
-        Printf("usingEKF2\n");
+        update_EKF3();//虽然能进去但是标志位决定了不会更新数据
+        static int num = 0;
+             num ++;
+             if(num >= 200)
+             {
+                 Printf("usingEKF2\n");
+                 num = 0;
+             }
     } else {
         // otherwise run EKF3 first
         update_EKF3();
@@ -326,10 +332,15 @@ void AP_AHRS_NavEKF::update_EKF3(void)
 void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 {
     Vector3f eulers;
+    Mti_G.getRotationBodyToNED(_dcm_matrix);
     Mti_G.getEulerAngles(eulers);
     roll  = eulers.x;
     pitch = eulers.y;
     yaw   = eulers.z;
+
+    update_cd_values();
+    update_trig();
+
     _gyro_estimate = Mti_G.get_mti_gyr();
     static int num=0;
     num ++;
@@ -569,7 +580,15 @@ bool AP_AHRS_NavEKF::get_secondary_attitude(Vector3f &eulers) const
 
     default:
         // DCM is secondary
-        eulers = _dcm_attitude;
+        static int num = 0;
+             num ++;
+             if(num >= 200)
+             {
+                 Printf("second_euler\n");
+                 num = 0;
+             }
+       eulers = _dcm_attitude;
+      //   Mti_G.getEulerAngles(eulers);
         return true;
     }
 }

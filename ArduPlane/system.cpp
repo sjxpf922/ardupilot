@@ -125,7 +125,7 @@ void Plane::init_ardupilot()
     gps.set_log_gps_bit(MASK_LOG_GPS);
     gps.init(serial_manager);
     TestUart.init();
-    Mti_G.init();
+    Mti_G.init();//by_sjx
     init_rc_in();               // sets up rc channels from radio
 
 #if MOUNT == ENABLED

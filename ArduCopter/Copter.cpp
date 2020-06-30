@@ -240,6 +240,8 @@ void Copter::fast_loop()
     // run EKF state estimator (expensive)
     // --------------------
     read_AHRS();
+    //by_sjx
+    copter.Mti_G.Read_Mti_AHRS();
 
 #if FRAME_CONFIG == HELI_FRAME
     update_heli_control_dynamics();
@@ -553,7 +555,13 @@ void Copter::read_AHRS(void)
     // update hil before ahrs update
     gcs().update();
 #endif
-
+    static int num = 0;
+                 num ++;
+                 if(num >= 200)
+                 {
+                     Printf("copter\n");
+                     num = 0;
+                 }
     // we tell AHRS to skip INS update as we have already done it in fast_loop()
     ahrs.update(true);
 }

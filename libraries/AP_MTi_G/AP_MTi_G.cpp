@@ -9,7 +9,7 @@
 #include <AP_MTi_G/AP_MTi_G.h>
 #include <stdio.h>
 #include <GCS_MAVLink/GCS.h>
-
+#include <AP_MTi_G/AP_MTi_G_core.h>
 extern const AP_HAL::HAL& hal;
 
 //construct
@@ -421,4 +421,9 @@ void AP_MTi_G :: Get_MTi_Euler(void)
 }
 
 */
-
+void AP_MTi_G::getRotationBodyToNED(Matrix3f &mat) const
+{
+    if (core) {
+        core[primary].getRotationBodyToNED(mat);
+    }
+}
