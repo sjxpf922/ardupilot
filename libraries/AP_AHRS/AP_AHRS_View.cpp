@@ -61,7 +61,7 @@ void AP_AHRS_View::set_pitch_trim(float trim_deg) {
 void AP_AHRS_View::update(bool skip_ins_update)
 {
     rot_body_to_ned = ahrs.get_rotation_body_to_ned();
-    gyro = ahrs.get_gyro();
+    gyro = ahrs.get_gyro();  //实际就是AP_AHRS_NavEKF里的get_gyro
 
     if (!is_zero(y_angle + _pitch_trim_deg)) {
         rot_body_to_ned = rot_body_to_ned * rot_view_T;

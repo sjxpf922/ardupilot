@@ -10,6 +10,7 @@
 #include <AP_Math/AP_Math.h>
 
 #define DEG_TO_RAD_MTI        0.0174532925f
+class MTi_G_core;
 
 class AP_MTi_G {
 public:
@@ -45,6 +46,7 @@ public:
     void Get_MTi_Loc(struct Location & loc)const;
     void printf_serial5(void);
     void getEulerAngles( Vector3f &eulers) const;
+    void getRotationBodyToNED(Matrix3f &mat) const;
     struct  {
                Vector3f  _MTI_acce;  //m/s^2  NED body
                Vector3f  _MTI_Gyr;   //rad/s
@@ -60,6 +62,8 @@ public:
 
 
    private:
+    uint8_t primary;   // current primary core
+    MTi_G_core *core = nullptr;
     //uint8_t mti_state;             //
     uint16_t checksum;              //Ð£ÑéºÍ
     uint8_t MID;                   //Message identifier

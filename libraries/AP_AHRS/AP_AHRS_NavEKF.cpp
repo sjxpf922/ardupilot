@@ -125,6 +125,8 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         num ++;
         if(num >= 200)
         {
+            get_rotation_body_to_ned();
+            hal.uartF->printf("%f %f %f\n%f %f %f\n%f %f %f\n",_dcm_matrix.a.x,_dcm_matrix.a.y,_dcm_matrix.a.z,_dcm_matrix.b.x,_dcm_matrix.b.y,_dcm_matrix.b.z,_dcm_matrix.c.x,_dcm_matrix.c.y,_dcm_matrix.c.z);
             hal.uartF->printf("use_mti\n");
             num = 0;
         }
@@ -137,6 +139,8 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
                 num ++;
                 if(num >= 200)
                 {
+                    get_rotation_body_to_ned();
+                    hal.uartF->printf("%f %f %f\n%f %f %f\n%f %f %f\n",_dcm_matrix.a.x,_dcm_matrix.a.y,_dcm_matrix.a.z,_dcm_matrix.b.x,_dcm_matrix.b.y,_dcm_matrix.b.z,_dcm_matrix.c.x,_dcm_matrix.c.y,_dcm_matrix.c.z);
                     hal.uartF->printf("use_ekf2\n");
                     num = 0;
                 }
@@ -337,10 +341,15 @@ void AP_AHRS_NavEKF::update_EKF3(void)
 void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 {
     Vector3f eulers;
+    MTi_G.getRotationBodyToNED(_dcm_matrix);
     MTi_G.getEulerAngles(eulers);
     roll  = eulers.x;
     pitch = eulers.y;
     yaw   = eulers.z;
+
+    update_cd_values();
+    update_trig();
+
     MTi_gyro = MTi_G.get_mti_gyr();
    /* static int num=0;
     num ++;
