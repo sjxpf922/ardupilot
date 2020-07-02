@@ -108,7 +108,48 @@ void Copter::Log_Write_MotBatt()
     logger.WriteBlock(&pkt_mot, sizeof(pkt_mot));
 #endif
 }
+struct PACKED log_Mti_G{
+    LOG_PACKET_HEADER;
+    uint64_t  time_us;
+    float      acc_x;
+    float      acc_y;
+    float      acc_z;
+    float      gry_x;
+    float      gry_y;
+    float      gry_z;
+    float      roll;//rad
+    float      pitch;
+    float      yew;
+    int32_t   _MTI_Lat;//*10e7
+    int32_t   _MTI_Lon;//*10e7
+    double    _MTI_Alt;//cm
+    double    _MTI_pressure;
+    float     _MTI_temp;
+};
 
+void Copter :: Log_Write_Mti_G()
+{
+    struct log_Mti_G pkt = {
+            LOG_PACKET_HEADER_INIT(LOG_MTI_G_MSG),
+            time_us             : AP_HAL::micros64(),
+            acc_x               : copter.Mti_G.MTI_EKF._MTI_acce.x,
+            acc_y               : copter.Mti_G.MTI_EKF._MTI_acce.y,
+            acc_z               : copter.Mti_G.MTI_EKF._MTI_acce.z,
+            gry_x               : copter.Mti_G.MTI_EKF._MTI_Gyr.x,
+            gry_y               : copter.Mti_G.MTI_EKF._MTI_Gyr.y,
+            gry_z               : copter.Mti_G.MTI_EKF._MTI_Gyr.z,
+            roll                : copter.Mti_G.MTI_EKF._MTI_attitude.x,
+            pitch               : copter.Mti_G.MTI_EKF._MTI_attitude.y,
+            yew                 : copter.Mti_G.MTI_EKF._MTI_attitude.z,
+            _MTI_Lat            : copter.Mti_G.MTI_EKF._MTI_Lat,
+            _MTI_Lon            : copter.Mti_G.MTI_EKF._MTI_Lon,
+            _MTI_Alt            : copter.Mti_G.MTI_EKF._MTI_Alt,
+            _MTI_pressure       : copter.Mti_G.MTI_EKF._MTI_pressure,
+            _MTI_temp           : copter.Mti_G.MTI_EKF._MTI_temp,
+
+    };
+    logger.WriteBlock(&pkt, sizeof(pkt));
+}
 // Wrote an event packet
 void Copter::Log_Write_Event(Log_Event id)
 {
@@ -409,6 +450,8 @@ const struct LogStructure Copter::log_structure[] = {
 #endif
     { LOG_GUIDEDTARGET_MSG, sizeof(log_GuidedTarget),
       "GUID",  "QBffffff",    "TimeUS,Type,pX,pY,pZ,vX,vY,vZ", "s-mmmnnn", "F-000000" },
+      { LOG_MTI_G_MSG, sizeof(log_Mti_G), \
+           "MTI", "QfffffffffLLddf",  "time_us, _MTI_acce, _MTI_Gyr,  _MTI_attitude, _MTI_Velocity,_MTI_Lat, _MTI_Lon, _MTI_Alt,_MTI_pressure,_MTI_temp,", "soooEEEkkkDUmPO", "F000000???GGB0?" },
 };
 
 void Copter::Log_Write_Vehicle_Startup_Messages()

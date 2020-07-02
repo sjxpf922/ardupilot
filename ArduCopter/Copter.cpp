@@ -240,6 +240,8 @@ void Copter::fast_loop()
     // run EKF state estimator (expensive)
     // --------------------
     read_AHRS();
+    //by_sjx
+    copter.Mti_G.Read_Mti_AHRS();
 
 #if FRAME_CONFIG == HELI_FRAME
     update_heli_control_dynamics();
@@ -567,6 +569,7 @@ void Copter::update_altitude()
     if (should_log(MASK_LOG_CTUN)) {
         Log_Write_Control_Tuning();
     }
+    Log_Write_Mti_G();
 }
 
 #if OSD_ENABLED == ENABLED

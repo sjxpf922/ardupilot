@@ -191,6 +191,7 @@ enum LoggingParameters {
      LOG_HELI_MSG,
      LOG_PRECLAND_MSG,
      LOG_GUIDEDTARGET_MSG,
+     LOG_MTI_G_MSG,  //by_sjx
 };
 
 #define MASK_LOG_ATTITUDE_FAST          (1<<0)

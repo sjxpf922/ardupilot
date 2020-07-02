@@ -45,7 +45,7 @@ public:
     };
 
     // Constructor
-    AP_AHRS_NavEKF(NavEKF2 &_EKF2, NavEKF3 &_EKF3, Flags flags = FLAG_NONE);
+    AP_AHRS_NavEKF(NavEKF2 &_EKF2, NavEKF3 &_EKF3,AP_MTi_G &Mti_G, Flags flags = FLAG_NONE);
 
     /* Do not allow copies */
     AP_AHRS_NavEKF(const AP_AHRS_NavEKF &other) = delete;
@@ -266,7 +266,11 @@ public:
 
     // check whether compass can be bypassed for arming check in case when external navigation data is available 
     bool is_ext_nav_used_for_yaw(void) const;
-
+    //by_sjx
+    void Upata_Get_MTi(void);
+    bool use_mti() const {return _use_mti;}
+    void set_mti_flag(bool mti_flag){_use_mti=mti_flag;}
+    //
 private:
     enum EKF_TYPE {EKF_TYPE_NONE=0,
                    EKF_TYPE3=3,
@@ -280,7 +284,12 @@ private:
     bool always_use_EKF() const {
         return _ekf_flags & FLAG_ALWAYS_USE_EKF;
     }
-
+    //by_sjx
+    AP_MTi_G &MTi_G;
+    Location Loc;
+    bool _use_mti;
+    Vector3f MTi_gyro;
+    //
     NavEKF2 &EKF2;
     NavEKF3 &EKF3;
     bool _ekf2_started;
