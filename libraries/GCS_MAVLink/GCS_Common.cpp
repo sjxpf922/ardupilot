@@ -1582,11 +1582,6 @@ void GCS_MAVLINK::send_raw_imu() //发送IMU原始数据
     } else {
         mag.zero();
     }
-  /*  if(ins.use_raw_mti())
-    {
-        accel = Mti_G.get_mti_acc();
-        gyro  = Mti_G.get_mti_gyr();
-    }*/
     mavlink_msg_raw_imu_send(
         chan,
         AP_HAL::micros(),
@@ -2342,7 +2337,7 @@ void GCS_MAVLINK::send_servo_output_raw()
             values[i] = SRV_Channels::srv_channel(i)->get_output_pwm();
         }
     } else {
-        hal.rcout->read(values, 16);
+        hal.rcout->read(values, 16);  //进入
     }
     for (uint8_t i=0; i<16; i++) {
         if (values[i] == 65535) {

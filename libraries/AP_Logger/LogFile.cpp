@@ -289,11 +289,6 @@ void AP_Logger::Write_IMU_instance(const uint64_t time_us, const uint8_t imu_ins
     const AP_InertialSensor &ins = AP::ins();
     const Vector3f &gyro = ins.get_gyro(imu_instance);
     const Vector3f &accel = ins.get_accel(imu_instance);
-   /* if(ins.use_raw_mti())
-    {
-        gyro=  Mti_G.get_mti_gyr();
-        accel =  Mti_G.get_mti_acc();
-    }*/
     const struct log_IMU pkt{
         LOG_PACKET_HEADER_INIT(type),
         time_us : time_us,
@@ -492,7 +487,7 @@ void AP_Logger::Write_Power(void)
 }
 
 // Write an AHRS2 packet
-void AP_Logger::Write_AHRS2(AP_AHRS &ahrs)
+void AP_Logger::Write_AHRS2(AP_AHRS &ahrs) //第二姿态位置信息
 {
     Vector3f euler;
     struct Location loc;
@@ -610,7 +605,7 @@ void AP_Logger::Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets)
         LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MSG),
         time_us         : AP_HAL::micros64(),
         control_roll    : (int16_t)targets.x,
-        roll            : (int16_t)ahrs.roll_sensor,
+        roll            : (int16_t)ahrs.roll_sensor,  //来自AP_AHRS_NavEKF
         control_pitch   : (int16_t)targets.y,
         pitch           : (int16_t)ahrs.pitch_sensor,
         control_yaw     : (uint16_t)wrap_360_cd(targets.z),
@@ -619,10 +614,11 @@ void AP_Logger::Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets)
         error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
     };
     WriteBlock(&pkt, sizeof(pkt));
+    hal.uartF->printf("ATT\n");
 }
 
 // Write an attitude packet
-void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
+void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)  //只在arduplane下调用了
 {
     const struct log_Attitude pkt{
         LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MSG),
@@ -635,6 +631,21 @@ void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
         yaw             : (uint16_t)wrap_360_cd(ahrs.yaw_sensor),
         error_rp        : (uint16_t)(ahrs.get_error_rp() * 100),
         error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
+void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro)
+{
+    const struct MTI_Attitude pkt{
+              LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MTI),
+              time_us         : AP_HAL::micros64(),
+              roll            : (int16_t)(degrees(eulers.x) * 100),
+              pitch           : (int16_t)(degrees(eulers.y) * 100),
+              yaw             : (uint16_t)wrap_360_cd(degrees(eulers.z) * 100),
+              gy_x            : degrees(gyro.x),
+              gy_y            : degrees(gyro.y),
+              gy_z            : degrees(gyro.z),
     };
     WriteBlock(&pkt, sizeof(pkt));
 }
@@ -849,7 +860,7 @@ void AP_Logger::Write_Rate(const AP_AHRS_View *ahrs,
         LOG_PACKET_HEADER_INIT(LOG_RATE_MSG),
         time_us         : AP_HAL::micros64(),
         control_roll    : degrees(rate_targets.x),
-        roll            : degrees(ahrs->get_gyro().x),
+        roll            : degrees(ahrs->get_gyro().x),//陀螺仪数据来自AP_AHRS_NavEKF
         roll_out        : motors.get_roll(),
         control_pitch   : degrees(rate_targets.y),
         pitch           : degrees(ahrs->get_gyro().y),

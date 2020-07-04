@@ -175,6 +175,8 @@ public:
     // attitude controller's target attitude.
     // **NOTE** Using vector3f*deg(100) is more efficient than deg(vector3f)*100 or deg(vector3d*100) because it gives the
     // same result with the fewest multiplications. Even though it may look like a bug, it is intentional. See issue 4895.
+    /*返回321固有欧拉角(以厘米为单位)，表示从NED earth帧到姿态控制器目标姿态的旋转。
+    **注意**使用vector3f*deg(100)比deg(vector3f)*100或deg(vector3d*100)更有效，因为它用最少的乘法得到相同的结果。尽管它看起来像一个bug，但这是故意的。看到发行4895。*/
     Vector3f get_att_target_euler_cd() const { return _attitude_target_euler_angle * degrees(100.0f); }
 
     // Return the body-to-NED target attitude used by the quadplane-specific attitude control input methods

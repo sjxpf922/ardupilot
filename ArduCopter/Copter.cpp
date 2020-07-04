@@ -92,7 +92,6 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(rc_loop,              100,    130),
     SCHED_TASK(throttle_loop,         50,     75),
     SCHED_TASK(update_GPS,            50,    200),
-    SCHED_TASK(Log_Mti_G,           100,    200),
 #if OPTFLOW == ENABLED
     SCHED_TASK_CLASS(OpticalFlow,          &copter.optflow,             update,         200, 160),
 #endif
@@ -328,14 +327,8 @@ void Copter::update_batt_compass(void)
 void Copter::fourhundred_hz_logging()
 {
     if (should_log(MASK_LOG_ATTITUDE_FAST)) {
-        Log_Write_Attitude();
+          Log_Write_Attitude();
     }
-}
-
-void Copter::Log_Mti_G()
-{
-        Log_Write_Mti_G();
-        Log_Write_Mti_G_imu();
 }
 
 // ten_hz_logging_loop
@@ -344,8 +337,9 @@ void Copter::ten_hz_logging_loop()
 {
     // log attitude data if we're not already logging at the higher rate
     if (should_log(MASK_LOG_ATTITUDE_MED) && !should_log(MASK_LOG_ATTITUDE_FAST)) {
-        Log_Write_Attitude();
+        Log_Write_Attitude(); //¼ÇÂ¼ATTÈÕÖ¾
         Log_Write_EKF_POS();
+      //  hal.uartF->printf("ten_hz_logging_loop\n");
     }
     if (should_log(MASK_LOG_MOTBATT)) {
         Log_Write_MotBatt();

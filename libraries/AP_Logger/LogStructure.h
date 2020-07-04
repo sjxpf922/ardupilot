@@ -741,6 +741,16 @@ struct PACKED log_Attitude {
     uint16_t error_rp;
     uint16_t error_yaw;
 };
+struct PACKED MTI_Attitude {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    int16_t  roll;
+    int16_t  pitch;
+    uint16_t yaw;
+    float   gy_x;
+    float   gy_y;
+    float   gy_z;
+};
 
 struct PACKED log_PID {
     LOG_PACKET_HEADER;
@@ -1395,8 +1405,9 @@ struct PACKED log_Arm_Disarm {
     { LOG_OA_BENDYRULER_MSG, sizeof(log_OABendyRuler), \
       "OABR","QBHHfLLLL","TimeUS,Active,DesYaw,Yaw,Mar,DLat,DLng,OALat,OALng", "sbddmDUDU", "F----GGGG" }, \
     { LOG_OA_DIJKSTRA_MSG, sizeof(log_OADijkstra), \
-      "OADJ","QBBBLLLL","TimeUS,State,CurrPoint,TotPoints,DLat,DLng,OALat,OALng", "sbbbDUDU", "F---GGGG" }
-
+      "OADJ","QBBBLLLL","TimeUS,State,CurrPoint,TotPoints,DLat,DLng,OALat,OALng", "sbbbDUDU", "F---GGGG" },\
+    { LOG_ATTITUDE_MTI, sizeof( MTI_Attitude),\
+      "MTI", "QccCfff", "TimeUS,Roll,Pitch,Yaw,GryX,GryY,GryZ", "sddhkkk", "FBBB???" }
 // messages for more advanced boards
 #define LOG_EXTRA_STRUCTURES \
     { LOG_IMU2_MSG, sizeof(log_IMU), \
@@ -1770,8 +1781,9 @@ enum LogMessages : uint8_t {
     LOG_ARM_DISARM_MSG,
     LOG_OA_BENDYRULER_MSG,
     LOG_OA_DIJKSTRA_MSG,
+    LOG_ATTITUDE_MTI,
+    _LOG_LAST_MSG_,
 
-    _LOG_LAST_MSG_
 };
 
 static_assert(_LOG_LAST_MSG_ <= 255, "Too many message formats");

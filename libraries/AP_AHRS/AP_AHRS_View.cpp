@@ -62,7 +62,7 @@ void AP_AHRS_View::update(bool skip_ins_update)
 {
     rot_body_to_ned = ahrs.get_rotation_body_to_ned();
     gyro = ahrs.get_gyro();
-
+    //if²»½øÈ¥
     if (!is_zero(y_angle + _pitch_trim_deg)) {
         rot_body_to_ned = rot_body_to_ned * rot_view_T;
         gyro = rot_view * gyro;

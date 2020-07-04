@@ -255,7 +255,7 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
             }
             MTI_ins.MTI_Gyr.x= fchar[m++];
             MTI_ins.MTI_Gyr.y=-fchar[m++];//È¡·´
-            MTI_ins.MTI_Gyr.z=-fchar[m++];          
+            MTI_ins.MTI_Gyr.z=-fchar[m++];
             break;
         case Velocity:
             data_length=3;

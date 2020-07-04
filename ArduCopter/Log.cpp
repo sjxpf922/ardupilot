@@ -63,8 +63,13 @@ void Copter::Log_Write_Attitude()
 {
     Vector3f targets = attitude_control->get_att_target_euler_cd();
     targets.z = wrap_360_cd(targets.z);
-    logger.Write_Attitude(ahrs, targets);
-    logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);
+    Vector3f eulers;
+    Mti_G.getEulerAngles(eulers);
+    Vector3f gyro;
+    gyro = Mti_G.get_mti_gyr();
+    logger.Write_Attitude(ahrs, targets);//记录日志中的ATT9个参数
+    logger.Write_Attitude_mti(eulers,gyro);
+    logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);//记录IMU和IMU2
     if (should_log(MASK_LOG_PID)) {
         logger.Write_PID(LOG_PIDR_MSG, attitude_control->get_rate_roll_pid().get_pid_info());
         logger.Write_PID(LOG_PIDP_MSG, attitude_control->get_rate_pitch_pid().get_pid_info());
@@ -107,88 +112,6 @@ void Copter::Log_Write_MotBatt()
     };
     logger.WriteBlock(&pkt_mot, sizeof(pkt_mot));
 #endif
-}
-struct PACKED log_Mti_G{
-    LOG_PACKET_HEADER;
-    uint64_t  time_us;
- //   float      acc_x;
-//    float      acc_y;
- //   float      acc_z;
- //   float      gry_x;
- //   float      gry_y;
-//    float      gry_z;
-    float      roll;//rad
-    float      pitch;
-    float      yew;
- //   int32_t   _MTI_Lat;//*10e7
-//    int32_t   _MTI_Lon;//*10e7
-//    double    _MTI_Alt;//cm
-//    double    _MTI_pressure;
-//    float     _MTI_temp;
-};
-
-void Copter :: Log_Write_Mti_G()
-{
-    struct log_Mti_G pkt = {
-            LOG_PACKET_HEADER_INIT(LOG_MTI_G_MSG),
-            time_us             : AP_HAL::micros64(),
-//            acc_x               : copter.Mti_G.MTI_EKF._MTI_acce.x,
-//            acc_y               : copter.Mti_G.MTI_EKF._MTI_acce.y,
-//            acc_z               : copter.Mti_G.MTI_EKF._MTI_acce.z,
-//            gry_x               : copter.Mti_G.MTI_EKF._MTI_Gyr.x,
- //           gry_y               : copter.Mti_G.MTI_EKF._MTI_Gyr.y,
-//            gry_z               : copter.Mti_G.MTI_EKF._MTI_Gyr.z,
-            roll                : copter.Mti_G.MTI_EKF._MTI_attitude.x,
-            pitch               : copter.Mti_G.MTI_EKF._MTI_attitude.y,
-            yew                 : copter.Mti_G.MTI_EKF._MTI_attitude.z,
-//            _MTI_Lat            : copter.Mti_G.MTI_EKF._MTI_Lat,
-//            _MTI_Lon            : copter.Mti_G.MTI_EKF._MTI_Lon,
-//            _MTI_Alt            : copter.Mti_G.MTI_EKF._MTI_Alt,
-//            _MTI_pressure       : copter.Mti_G.MTI_EKF._MTI_pressure,
-//            _MTI_temp           : copter.Mti_G.MTI_EKF._MTI_temp,
-
-    };
-    logger.WriteBlock(&pkt, sizeof(pkt));
-}
-
-struct PACKED _log_Mti_G{
-    LOG_PACKET_HEADER;
-    uint64_t  time_us;
-    float      acc_x;
-    float      acc_y;
-    float      acc_z;
-    float      gry_x;
-    float      gry_y;
-    float      gry_z;
- //   int32_t   _MTI_Lat;//*10e7
-//    int32_t   _MTI_Lon;//*10e7
-//    double    _MTI_Alt;//cm
-//    double    _MTI_pressure;
-//    float     _MTI_temp;
-};
-
-void Copter :: Log_Write_Mti_G_imu()
-{
-    struct _log_Mti_G pkt = {
-            LOG_PACKET_HEADER_INIT(_LOG_MTI_G_MSG),
-            time_us             : AP_HAL::micros64(),
-            acc_x               : copter.Mti_G.MTI_EKF._MTI_acce.x,
-            acc_y               : copter.Mti_G.MTI_EKF._MTI_acce.y,
-            acc_z               : copter.Mti_G.MTI_EKF._MTI_acce.z,
-            gry_x               : copter.Mti_G.MTI_EKF._MTI_Gyr.x,
-            gry_y               : copter.Mti_G.MTI_EKF._MTI_Gyr.y,
-            gry_z               : copter.Mti_G.MTI_EKF._MTI_Gyr.z,
-//            roll                : copter.Mti_G.MTI_EKF._MTI_attitude.x,
-//            pitch               : copter.Mti_G.MTI_EKF._MTI_attitude.y,
-//            yew                 : copter.Mti_G.MTI_EKF._MTI_attitude.z,
-//            _MTI_Lat            : copter.Mti_G.MTI_EKF._MTI_Lat,
-//            _MTI_Lon            : copter.Mti_G.MTI_EKF._MTI_Lon,
-//            _MTI_Alt            : copter.Mti_G.MTI_EKF._MTI_Alt,
-//            _MTI_pressure       : copter.Mti_G.MTI_EKF._MTI_pressure,
-//            _MTI_temp           : copter.Mti_G.MTI_EKF._MTI_temp,
-
-    };
-    logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
 // Wrote an event packet
@@ -491,12 +414,6 @@ const struct LogStructure Copter::log_structure[] = {
 #endif
     { LOG_GUIDEDTARGET_MSG, sizeof(log_GuidedTarget),
       "GUID",  "QBffffff",    "TimeUS,Type,pX,pY,pZ,vX,vY,vZ", "s-mmmnnn", "F-000000" },
-   //   { LOG_MTI_G_MSG, sizeof(log_Mti_G),
-   //        "MTI", "QfffffffffLLddf",  "time_us, AccX,AccY,AccZ, GyrX,GyrY,GyrZ,Roll,Pitch,Yaw,Lat,Lon,Alt, Press,T", "soooEEEkkkDUmPO", "F000000???GGB0?" },
-      { LOG_MTI_G_MSG, sizeof(log_Mti_G),
-          "_MTI", "Qfff",  "time_us, Roll,Pitch,Yaw", "skkk", "F???" },
-      { _LOG_MTI_G_MSG, sizeof(_log_Mti_G),
-                      "MTI", "Qffffff",  "time_us, AccX,AccY,AccZ, GyrX,GyrY,GyrZ", "soooEEE", "F000000" },
 };
 
 void Copter::Log_Write_Vehicle_Startup_Messages()
