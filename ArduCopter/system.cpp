@@ -134,6 +134,7 @@ void Copter::init_ardupilot()
     gps.set_log_gps_bit(MASK_LOG_GPS);
     gps.init(serial_manager);
     Mti_G.init();//by_sjx
+    uart5.init();
     AP::compass().set_log_bit(MASK_LOG_COMPASS);
     AP::compass().init();
 

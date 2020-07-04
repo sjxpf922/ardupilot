@@ -92,6 +92,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(rc_loop,              100,    130),
     SCHED_TASK(throttle_loop,         50,     75),
     SCHED_TASK(update_GPS,            50,    200),
+    SCHED_TASK(Log_Mti_G,           100,    200),
 #if OPTFLOW == ENABLED
     SCHED_TASK_CLASS(OpticalFlow,          &copter.optflow,             update,         200, 160),
 #endif
@@ -232,16 +233,17 @@ void Copter::fast_loop()
     ins.update();
 
     // run low level rate controllers that only require IMU data
-    attitude_control->rate_controller_run();
+    attitude_control->rate_controller_run(); //调用库里的速率控制
 
     // send outputs to the motors library immediately
     motors_output();
 
     // run EKF state estimator (expensive)
     // --------------------
-    read_AHRS();
     //by_sjx
     copter.Mti_G.Read_Mti_AHRS();
+    read_AHRS();
+
 
 #if FRAME_CONFIG == HELI_FRAME
     update_heli_control_dynamics();
@@ -328,6 +330,12 @@ void Copter::fourhundred_hz_logging()
     if (should_log(MASK_LOG_ATTITUDE_FAST)) {
         Log_Write_Attitude();
     }
+}
+
+void Copter::Log_Mti_G()
+{
+        Log_Write_Mti_G();
+        Log_Write_Mti_G_imu();
 }
 
 // ten_hz_logging_loop
@@ -569,7 +577,6 @@ void Copter::update_altitude()
     if (should_log(MASK_LOG_CTUN)) {
         Log_Write_Control_Tuning();
     }
-    Log_Write_Mti_G();
 }
 
 #if OSD_ENABLED == ENABLED

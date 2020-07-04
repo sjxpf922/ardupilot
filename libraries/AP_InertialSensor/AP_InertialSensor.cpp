@@ -468,7 +468,8 @@ AP_InertialSensor *AP_InertialSensor::_singleton = nullptr;
 
 AP_InertialSensor::AP_InertialSensor() :
     _board_orientation(ROTATION_NONE),
-    _log_raw_bit(-1)
+    _log_raw_bit(-1),
+    _use_mti_rawdata(false)
 {
     if (_singleton) {
         AP_HAL::panic("Too many inertial sensors");

@@ -2,7 +2,7 @@
 
 // transform pilot's yaw input into a desired yaw rate
 // returns desired yaw rate in centi-degrees per second
-float Copter::get_pilot_desired_yaw_rate(int16_t stick_angle)
+float Copter::get_pilot_desired_yaw_rate(int16_t stick_angle) //得到飞机的期望航向角速率
 {
     float yaw_request;
 
@@ -33,7 +33,7 @@ float Copter::get_pilot_desired_yaw_rate(int16_t stick_angle)
  ****************************************************************/
 
 // update estimated throttle required to hover (if necessary)
-//  called at 100hz
+//  called at 100hz   更新估计悬停所需的油门
 void Copter::update_throttle_hover()
 {
 #if FRAME_CONFIG != HELI_FRAME
@@ -66,13 +66,13 @@ void Copter::update_throttle_hover()
 // set_throttle_takeoff - allows parents to tell throttle controller we are taking off so I terms can be cleared
 void Copter::set_throttle_takeoff()
 {
-    // tell position controller to reset alt target and reset I terms
+    // tell position controller to reset alt target and reset I terms 告诉位置控制器重置目标高度和重置I项
     pos_control->init_takeoff();
 }
 
 // get_pilot_desired_climb_rate - transform pilot's throttle input to climb rate in cm/s
 // without any deadzone at the bottom
-float Copter::get_pilot_desired_climb_rate(float throttle_control)
+float Copter::get_pilot_desired_climb_rate(float throttle_control)//将油门转变为爬升率
 {
     // throttle failsafe check
     if (failsafe.radio) {
@@ -121,7 +121,7 @@ float Copter::get_non_takeoff_throttle()
 
 // adjust_climb_rate - hold copter at the desired distance above the
 //      ground; returns climb rate (in cm/s) which should be passed to
-//      the position controller
+//      the position controller经过位置控制器返回爬升率
 float Copter::SurfaceTracking::adjust_climb_rate(float target_rate)
 {
 #if RANGEFINDER_ENABLED == ENABLED

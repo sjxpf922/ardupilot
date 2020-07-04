@@ -289,6 +289,7 @@ private:
     Location Loc;
     bool _use_mti;
     Vector3f MTi_gyro;
+    Vector3f MTi_acc;
     //
     NavEKF2 &EKF2;
     NavEKF3 &EKF3;

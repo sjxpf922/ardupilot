@@ -289,6 +289,11 @@ void AP_Logger::Write_IMU_instance(const uint64_t time_us, const uint8_t imu_ins
     const AP_InertialSensor &ins = AP::ins();
     const Vector3f &gyro = ins.get_gyro(imu_instance);
     const Vector3f &accel = ins.get_accel(imu_instance);
+   /* if(ins.use_raw_mti())
+    {
+        gyro=  Mti_G.get_mti_gyr();
+        accel =  Mti_G.get_mti_acc();
+    }*/
     const struct log_IMU pkt{
         LOG_PACKET_HEADER_INIT(type),
         time_us : time_us,

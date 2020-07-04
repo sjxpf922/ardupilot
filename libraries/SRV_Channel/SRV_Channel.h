@@ -235,7 +235,7 @@ private:
     AP_Int8 function;
 
     // a pending output value as PWM
-    uint16_t output_pwm;
+    uint16_t output_pwm; //บวบว
 
     // true for angle output type
     bool type_angle:1;

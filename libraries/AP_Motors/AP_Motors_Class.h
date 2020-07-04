@@ -110,8 +110,8 @@ public:
 
     // desired spool states
     enum class DesiredSpoolState : uint8_t {
-        SHUT_DOWN = 0,              // all motors should move to stop
-        GROUND_IDLE = 1,            // all motors should move to ground idle
+        SHUT_DOWN = 0,              // all motors should move to stop    Í£Ö¹
+        GROUND_IDLE = 1,            // all motors should move to ground idle  µ¡ËÙ
         THROTTLE_UNLIMITED = 2,     // motors should move to being a state where throttle is unconstrained (e.g. by start up procedure)
     };
 

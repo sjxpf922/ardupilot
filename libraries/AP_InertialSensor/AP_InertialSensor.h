@@ -239,7 +239,8 @@ public:
 
     // check for vibration movement. True when all axis show nearly zero movement
     bool is_still();
-
+    void set_mti_raw_flag(bool flag){_use_mti_rawdata=flag;}
+    bool use_raw_mti()const{return _use_mti_rawdata;}
     /*
       HIL set functions. The minimum for HIL is set_accel() and
       set_gyro(). The others are option for higher fidelity log
@@ -294,6 +295,8 @@ public:
         IMU_SENSOR_TYPE_ACCEL = 0,
         IMU_SENSOR_TYPE_GYRO = 1,
     };
+private :
+    bool _use_mti_rawdata;
 
     class BatchSampler {
     public:
@@ -339,7 +342,6 @@ public:
             BATCH_OPT_SENSOR_RATE = (1<<0),
             BATCH_OPT_POST_FILTER = (1<<1),
         };
-
         void rotate_to_next_sensor();
         void update_doing_sensor_rate_logging();
 

@@ -15,7 +15,7 @@
 #include <AP_Beacon/AP_Beacon.h>
 #include <AP_Proximity/AP_Proximity.h>
 #include <AP_InertialSensor/AP_InertialSensor_Backend.h>
-
+#include <AP_MTi_G/AP_MTi_G.h>
 #include <stdint.h>
 
 #include "LoggerMessageWriter.h"
@@ -518,7 +518,7 @@ private:
     int16_t get_log_data(uint16_t log_num, uint16_t page, uint32_t offset, uint16_t len, uint8_t *data);
 
     /* end support for retrieving logs via mavlink: */
-
+    AP_MTi_G Mti_G;
 };
 
 namespace AP {

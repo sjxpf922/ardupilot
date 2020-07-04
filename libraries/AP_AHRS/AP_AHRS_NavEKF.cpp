@@ -52,20 +52,20 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
 // return the smoothed gyro vector corrected for drift
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
 {
-
-
-        return MTi_gyro;
-
-   /* else if(active_EKF_type())
-    {
-        return _gyro_estimate;
-    }
-    else
-        return AP_AHRS_DCM::get_gyro();*/
-    //if (!active_EKF_type()) {
-    //    return AP_AHRS_DCM::get_gyro();
-  //  }
-  //  return _gyro_estimate;
+    if(use_mti())
+        {
+            return MTi_gyro;
+        }
+        else if(active_EKF_type())
+        {
+            return _gyro_estimate;
+        }
+        else
+            return AP_AHRS_DCM::get_gyro();
+     //   if (!active_EKF_type()) {
+     //       return AP_AHRS_DCM::get_gyro();
+     //   }
+     //   return _gyro_estimate;
 }
 
 const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
@@ -118,7 +118,8 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     update_SITL();
 #endif
-
+    if(use_mti())  //如果使用MTi
+       {
            Upata_Get_MTi();
            static int num = 0;
            num ++;
@@ -127,8 +128,9 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
                hal.uartF->printf("use_mti\n");
                num = 0;
            }
+       }
+       else if (_ekf_type == 2) {
 
- /*      else if (_ekf_type == 2) {
   //  if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
@@ -138,7 +140,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         // otherwise run EKF3 first
         update_EKF3();
         update_EKF2();
-    }*/
+    }
 
 #if AP_MODULE_SUPPORTED
     // call AHRS_update hook if any
@@ -338,14 +340,15 @@ void AP_AHRS_NavEKF::Upata_Get_MTi(void)
     update_cd_values();
     update_trig();
     MTi_gyro = MTi_G.get_mti_gyr();
-   /* static int num=0;
+    MTi_acc = _dcm_matrix*MTi_G.get_mti_acc();
+  static int num=0;
     num ++;
     if(num >=200)
     {
         hal.uartF->printf("gx = %f\n gy= %f\n gz = %f\n",MTi_gyro.x,MTi_gyro.y,MTi_gyro.z);
         hal.uartF->printf("roll = %f\n pitch= %f\n yaw = %f\n",roll,pitch,yaw);
         num = 0;
-    }*/
+    }
 }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 void AP_AHRS_NavEKF::update_SITL(void)
@@ -411,6 +414,10 @@ const Vector3f &AP_AHRS_NavEKF::get_accel_ef(uint8_t i) const
     if (active_EKF_type() == EKF_TYPE_NONE) {
         return AP_AHRS_DCM::get_accel_ef(i);
     }
+ /*   if(use_mti())
+    {
+        return MTi_acc;
+    }*/
     return _accel_ef_ekf[i];
 }
 
@@ -420,6 +427,10 @@ const Vector3f &AP_AHRS_NavEKF::get_accel_ef_blended(void) const
     if (active_EKF_type() == EKF_TYPE_NONE) {
         return AP_AHRS_DCM::get_accel_ef_blended();
     }
+ /*   if(use_mti())
+      {
+          return MTi_acc;
+      }*/
     return _accel_ef_ekf_blended;
 }
 

@@ -1569,7 +1569,7 @@ void GCS_MAVLINK::send_rc_channels_raw() const
         receiver_rssi);
 }
 
-void GCS_MAVLINK::send_raw_imu()
+void GCS_MAVLINK::send_raw_imu() //发送IMU原始数据
 {
     const AP_InertialSensor &ins = AP::ins();
     const Compass &compass = AP::compass();
@@ -1582,7 +1582,11 @@ void GCS_MAVLINK::send_raw_imu()
     } else {
         mag.zero();
     }
-
+  /*  if(ins.use_raw_mti())
+    {
+        accel = Mti_G.get_mti_acc();
+        gyro  = Mti_G.get_mti_gyr();
+    }*/
     mavlink_msg_raw_imu_send(
         chan,
         AP_HAL::micros(),
@@ -3975,6 +3979,10 @@ void GCS_MAVLINK::send_attitude() const
 {
     const AP_AHRS &ahrs = AP::ahrs();
     const Vector3f omega = ahrs.get_gyro();
+  /* if(ahrs.use_Mti())
+    {
+        Mti_G.get_mti_gyr();
+    }*/
     mavlink_msg_attitude_send(
         chan,
         AP_HAL::millis(),

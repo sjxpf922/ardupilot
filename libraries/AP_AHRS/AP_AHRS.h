@@ -57,7 +57,8 @@ public:
         _vehicle_class(AHRS_VEHICLE_UNKNOWN),
         _cos_roll(1.0f),
         _cos_pitch(1.0f),
-        _cos_yaw(1.0f)
+        _cos_yaw(1.0f),
+        _use_mti(false)
     {
         _singleton = this;
 
@@ -580,7 +581,9 @@ public:
     HAL_Semaphore &get_semaphore(void) {
         return _rsem;
     }
-
+    bool use_Mti() const {return _use_mti;}
+    void set_Mti_flag(bool mti_flag){_use_mti=mti_flag;}
+    void set_ekf_type(uint8_t num){_ekf_type = num;}
 protected:
     void update_nmea_out();
 
@@ -687,7 +690,7 @@ protected:
 
 private:
     static AP_AHRS *_singleton;
-
+    bool _use_mti;
     AP_NMEA_Output* _nmea_out;
 };
 
