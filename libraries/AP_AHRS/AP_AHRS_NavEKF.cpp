@@ -44,7 +44,7 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
     EKF3(_EKF3),
     MTi_G(_MTi_G),
     _ekf_flags(flags),
-     _use_mti(false)
+    _use_mti(false)
 {
     _dcm_matrix.identity();
 }
@@ -52,7 +52,7 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
 // return the smoothed gyro vector corrected for drift
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
 {
-    if(use_mti())
+    if(_ekf_type == 4)
         {
             return MTi_gyro;
         }
@@ -73,7 +73,7 @@ const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
     if (!active_EKF_type()) {
         return AP_AHRS_DCM::get_rotation_body_to_ned();
     }
-    return _dcm_matrix;
+        return _dcm_matrix;
 }
 
 const Vector3f &AP_AHRS_NavEKF::get_gyro_drift(void) const
@@ -118,22 +118,22 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     update_SITL();
 #endif
-    if(use_mti())  //如果使用MTi
-       {
-           Upata_Get_MTi();
-           static int num = 0;
-           num ++;
-           if(num >= 200)
-           {
-               hal.uartF->printf("use_mti\n");
-               num = 0;
-           }
-       }
-       else if (_ekf_type == 2) {
-
-  //  if (_ekf_type == 2) {
+  if(_ekf_type == 4)  //如果使用MTi
+      {
+          Upata_Get_MTi();
+          static int num = 0;
+          num ++;
+          if(num >= 200)
+          {
+            hal.uartF->printf("use_mti\n");
+             num = 0;
+          }
+      }
+     else if (_ekf_type == 2) {
+// if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
+//        Upata_Get_MTi();
         update_EKF2();
         update_EKF3();
     } else {
@@ -331,22 +331,19 @@ void AP_AHRS_NavEKF::update_EKF3(void)
 void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 {
     Vector3f eulers;
-    MTi_G.getRotationBodyToNED(_dcm_matrix);
-    MTi_G.getEulerAngles(eulers);
+    _dcm_matrix = MTi_G.get_mti_Matrix();
+    MTi_G.Matrix_to_eulers(eulers,_dcm_matrix);
     roll  = eulers.x;
     pitch = eulers.y;
     yaw   = eulers.z;
-
-    update_cd_values();
-    update_trig();
     MTi_gyro = MTi_G.get_mti_gyr();
-    MTi_acc = _dcm_matrix*MTi_G.get_mti_acc();
-  static int num=0;
+
+    static int num=0;
     num ++;
     if(num >=200)
     {
-        hal.uartF->printf("gx = %f\n gy= %f\n gz = %f\n",MTi_gyro.x,MTi_gyro.y,MTi_gyro.z);
-        hal.uartF->printf("roll = %f\n pitch= %f\n yaw = %f\n",roll,pitch,yaw);
+        hal.uartF->printf("mat1 = %f mat2= %f mat3 = %f\n mat4 = %f mat5= %f mat6 = %f\n mat7 = %f mat8= %f mat9 = %f",_dcm_matrix.a.x,_dcm_matrix.a.y,_dcm_matrix.a.z,_dcm_matrix.b.x,_dcm_matrix.b.y,_dcm_matrix.b.z,_dcm_matrix.c.x,_dcm_matrix.c.y,_dcm_matrix.c.z);
+        hal.uartF->printf("roll=%f pitch=%f yaw=%f\n",eulers.x,eulers.y,eulers.z);
         num = 0;
     }
 }

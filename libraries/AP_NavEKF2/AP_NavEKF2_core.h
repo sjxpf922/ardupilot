@@ -408,13 +408,13 @@ private:
     };
 
     struct output_elements {
-        Quaternion  quat;           // 0..3
+        Quaternion  quat;           // 0..3//jjjhk
         Vector3f    velocity;       // 4..6
         Vector3f    position;       // 7..9
     };
 
     struct imu_elements {
-        Vector3f    delAng;         // 0..2
+        Vector3f    delAng;         // 0..2   kkk
         Vector3f    delVel;         // 3..5
         float       delAngDT;       // 6
         float       delVelDT;       // 7
@@ -901,9 +901,9 @@ private:
     gps_elements gpsDataNew;        // GPS data at the current time horizon
     gps_elements gpsDataDelayed;    // GPS data at the fusion time horizon
     uint8_t gpsStoreIndex;          // GPS data storage index
-    output_elements outputDataNew;  // output state data at the current time step
+    output_elements outputDataNew;  // output state data at the current time step 输出当前时间步长的状态数据
     output_elements outputDataDelayed; // output state data at the current time step
-    Vector3f delAngCorrection;      // correction applied to delta angles used by output observer to track the EKF
+    Vector3f delAngCorrection;      // correction applied to delta angles used by output observer to track the EKF 修正输出观察者用来跟踪EKF的三角角
     Vector3f velErrintegral;        // integral of output predictor NED velocity tracking error (m)
     Vector3f posErrintegral;        // integral of output predictor NED position tracking error (m.sec)
     float innovYaw;                 // compass yaw angle innovation (rad)

@@ -233,7 +233,6 @@ public:
 
     // return a smoothed and corrected gyro vector in radians/second
     virtual const Vector3f &get_gyro(void) const = 0;
-
     // return a smoothed and corrected gyro vector in radians/second using the latest ins data (which may not have been consumed by the EKF yet)
     Vector3f get_gyro_latest(void) const;
 
@@ -541,7 +540,6 @@ public:
     int8_t get_ekf_type(void) const {
         return _ekf_type;
     }
-
     // Retrieves the corrected NED delta velocity in use by the inertial navigation
     virtual void getCorrectedDeltaVelocityNED(Vector3f& ret, float& dt) const {
         ret.zero();
@@ -647,9 +645,8 @@ protected:
     // time in microseconds of last compass update
     uint32_t _compass_last_update;
 
-    // a vector to capture the difference between the controller and body frames
+    // a vector to capture the difference between the controller and body frames  捕捉控制器和车身框架之间的差异的矢量
     AP_Vector3f         _trim;
-
     // cached trim rotations
     Vector3f _last_trim;
     Matrix3f _rotation_autopilot_body_to_vehicle_body;

@@ -17,9 +17,10 @@
  */
 
 #pragma GCC optimize("O2")
-
+#include <GCS_MAVLink/GCS.h>
 #include "AP_Math.h"
-
+#include <AP_AHRS/AP_AHRS.h>
+//#include <AP_MTi_G/AP_MTi_G.h>
 // return the rotation matrix equivalent for this quaternion
 void Quaternion::rotation_matrix(Matrix3f &m) const
 {
@@ -45,7 +46,7 @@ void Quaternion::rotation_matrix(Matrix3f &m) const
 }
 
 // return the rotation matrix equivalent for this quaternion after normalization
-void Quaternion::rotation_matrix_norm(Matrix3f &m) const
+void Quaternion::rotation_matrix_norm(Matrix3f &m) const//未用
 {
     const float q1q1 = q1 * q1;
     const float q1q2 = q1 * q2;
@@ -70,7 +71,7 @@ void Quaternion::rotation_matrix_norm(Matrix3f &m) const
     m.c.z = (-q2q2 - q3q3 + q4q4 + q1q1)*invs;
 }
 
-// return the rotation matrix equivalent for this quaternion
+// return the rotation matrix equivalent for this quaternion  返回这个四元数的等效旋转矩阵
 // Thanks to Martin John Baker
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/index.htm
 void Quaternion::from_rotation_matrix(const Matrix3f &m)
@@ -91,31 +92,32 @@ void Quaternion::from_rotation_matrix(const Matrix3f &m)
 
     const float tr = m00 + m11 + m22;
 
-    if (tr > 0) {
-        const float S = sqrtf(tr+1) * 2;
-        qw = 0.25f * S;
-        qx = (m21 - m12) / S;
-        qy = (m02 - m20) / S;
-        qz = (m10 - m01) / S;
-    } else if ((m00 > m11) && (m00 > m22)) {
-        const float S = sqrtf(1.0f + m00 - m11 - m22) * 2.0f;
-        qw = (m21 - m12) / S;
-        qx = 0.25f * S;
-        qy = (m01 + m10) / S;
-        qz = (m02 + m20) / S;
-    } else if (m11 > m22) {
-        const float S = sqrtf(1.0f + m11 - m00 - m22) * 2.0f;
-        qw = (m02 - m20) / S;
-        qx = (m01 + m10) / S;
-        qy = 0.25f * S;
-        qz = (m12 + m21) / S;
-    } else {
-        const float S = sqrtf(1.0f + m22 - m00 - m11) * 2.0f;
-        qw = (m10 - m01) / S;
-        qx = (m02 + m20) / S;
-        qy = (m12 + m21) / S;
-        qz = 0.25f * S;
-    }
+        if (tr > 0) {
+            const float S = sqrtf(tr+1) * 2;
+            qw = 0.25f * S;
+            qx = (m21 - m12) / S;
+            qy = (m02 - m20) / S;
+            qz = (m10 - m01) / S;
+        } else if ((m00 > m11) && (m00 > m22)) {
+            const float S = sqrtf(1.0f + m00 - m11 - m22) * 2.0f;
+            qw = (m21 - m12) / S;
+            qx = 0.25f * S;
+            qy = (m01 + m10) / S;
+            qz = (m02 + m20) / S;
+        } else if (m11 > m22) {
+            const float S = sqrtf(1.0f + m11 - m00 - m22) * 2.0f;
+            qw = (m02 - m20) / S;
+            qx = (m01 + m10) / S;
+            qy = 0.25f * S;
+            qz = (m12 + m21) / S;
+        } else {
+            const float S = sqrtf(1.0f + m22 - m00 - m11) * 2.0f;
+            qw = (m10 - m01) / S;
+            qx = (m02 + m20) / S;
+            qy = (m12 + m21) / S;
+            qz = 0.25f * S;
+        }
+    //}
 }
 
 // convert a vector from earth to body frame
@@ -124,6 +126,14 @@ void Quaternion::earth_to_body(Vector3f &v) const
     Matrix3f m;
     rotation_matrix(m);
     v = m * v;
+}
+//by_sjx
+void Quaternion::from_mti_quat(const Quaternion &m)
+{
+    q1 = m.q1;
+    q2 = m.q2;
+    q3 = m.q3;
+    q4 = m.q4;
 }
 
 // create a quaternion from Euler angles
@@ -196,7 +206,7 @@ void Quaternion::to_axis_angle(Vector3f &v)
     }
 }
 
-void Quaternion::from_axis_angle_fast(Vector3f v)
+void Quaternion::from_axis_angle_fast(Vector3f v) //未用
 {
     const float theta = v.length();
     if (is_zero(theta)) {
@@ -208,7 +218,7 @@ void Quaternion::from_axis_angle_fast(Vector3f v)
     from_axis_angle_fast(v,theta);
 }
 
-void Quaternion::from_axis_angle_fast(const Vector3f &axis, float theta)
+void Quaternion::from_axis_angle_fast(const Vector3f &axis, float theta)//未用
 {
     const float t2 = theta/2.0f;
     const float sqt2 = sq(t2);
@@ -220,7 +230,7 @@ void Quaternion::from_axis_angle_fast(const Vector3f &axis, float theta)
     q4 = axis.z * st2;
 }
 
-void Quaternion::rotate_fast(const Vector3f &v)
+void Quaternion::rotate_fast(const Vector3f &v) //未使用
 {
     const float theta = v.length();
     if (is_zero(theta)) {
@@ -294,7 +304,7 @@ Quaternion Quaternion::inverse(void) const
     return Quaternion(q1, -q2, -q3, -q4);
 }
 
-void Quaternion::normalize(void)
+void Quaternion::normalize(void) //归一化
 {
     const float quatMag = length();
     if (!is_zero(quatMag)) {
@@ -306,7 +316,7 @@ void Quaternion::normalize(void)
     }
 }
 
-Quaternion Quaternion::operator*(const Quaternion &v) const
+Quaternion Quaternion::operator*(const Quaternion &v) const////未用
 {
     Quaternion ret;
     const float &w1 = q1;
@@ -327,7 +337,7 @@ Quaternion Quaternion::operator*(const Quaternion &v) const
     return ret;
 }
 
-Quaternion &Quaternion::operator*=(const Quaternion &v)
+Quaternion &Quaternion::operator*=(const Quaternion &v)////未用
 {
     const float w1 = q1;
     const float x1 = q2;

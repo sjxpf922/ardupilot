@@ -42,7 +42,7 @@ public:
     // return a smoothed and corrected gyro vector using the latest ins data (which may not have been consumed by the EKF yet)
     Vector3f get_gyro_latest(void) const;
 
-    // return a DCM rotation matrix representing our current attitude in this view
+    // return a DCM rotation matrix representing our current attitude in this view 返回DCM旋转矩阵，表示当前视图中的姿态
     const Matrix3f &get_rotation_body_to_ned(void) const {
         return rot_body_to_ned;
     }

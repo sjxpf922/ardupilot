@@ -427,7 +427,7 @@ const AP_Param::Info Copter::var_info[] = {
     // @Param: ACRO_YAW_P
     // @DisplayName: Acro Yaw P gain
     // @Description: Converts pilot yaw input into a desired rate of rotation.  Higher values mean faster rate of rotation.
-    // @Range: 1 10
+    // @Range: 1 10  将飞行员的偏航输入转换为所需的转速。数值越大，意味着旋转速度越快。
     // @User: Standard
     GSCALAR(acro_yaw_p,                 "ACRO_YAW_P",           ACRO_YAW_P),
 

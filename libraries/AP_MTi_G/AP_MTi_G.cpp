@@ -9,7 +9,6 @@
 #include <AP_MTi_G/AP_MTi_G.h>
 #include <stdio.h>
 #include <GCS_MAVLink/GCS.h>
-#include <AP_MTi_G/AP_MTi_G_core.h>
 extern const AP_HAL::HAL& hal;
 
 //construct
@@ -57,14 +56,14 @@ bool AP_MTi_G :: Read_Mti_AHRS(void)
 
 void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
 {
-    if(readnum>MessLen)  //所有数据都接收、解析完毕，统一publish出去
+    if(readnum > MessLen)  //所有数据都接收、解析完毕，统一publish出去
     {
         MTi.mti_state = HEAR::PREAMBLE1;
-        readnum=0;
-        if((checksum&0xff)==0)
+        readnum = 0;
+        if((checksum&0xff) == 0)
         {
             Mtidata_push();
-           // printf_serial5();
+          //  printf_serial5();
         }
     }
    switch(MTi.mti_state)
@@ -80,7 +79,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
             if(temp == 0xFF)
             {
                 MTi.mti_state = HEAR::MESSAGEID;
-                checksum +=temp;
+                checksum += temp;
             }
             else
             {
@@ -98,7 +97,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
             break;
         case HEAR::MESSAGEID :
             MID = temp;
-            if(MID!= 0x36)
+            if(MID != 0x36)
             {
                 MTi.mti_state = HEAR::PREAMBLE1;
                 checksum = 0;
@@ -118,9 +117,9 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
             buff[p_data++] = temp;
             if(p_data == 2)
             {
-                if(buff[0] == 0x20&& buff[1] == 0x30 )
+                if(buff[0] == 0x20&& buff[1] == 0x20 )  //
                 {  
-                    DataId = Attitude_Angle;
+                    DataId = Mti_Matrix;
                     MTi.mti_state = HEAR::DATALEN;
                     p_data = 0;
                 }
@@ -180,10 +179,10 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
             readnum += 1;
             checksum += temp;
             buff[p_data++] = temp;
-            if(p_data>=Data_Len)
+            if(p_data >= Data_Len)
              {
                 Mti_Parsing(DataId,buff,Data_Len);
-                p_data=0;
+                p_data = 0;
                 MTi.mti_state = HEAR::DATAID;
              }
                break;
@@ -207,24 +206,30 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
             double Mti_Data;
             uint8_t Mti_buff[8];
         } MtiData1;         //用来解析double数据
-    int n=0,m=0,data_length,mti_packet=0;
+    int n = 0,m = 0,data_length,mti_packet=0;
     double  fchar[18];  
     switch(ID)
     {
-        case Attitude_Angle:
-            data_length=Len/4;  
-            for(int i=0;i<data_length;i++)
+        case Mti_Matrix:
+            data_length = Len/4;
+            for(int i = 0;i < data_length;i ++)
             {
-                for(int j=0;j<=3;j++)
+                for(int j = 0;j <=3 ;j ++)
                 {
-                    MtiData.Mti_b[3-j]=*(data+n); //平台为小端，传输为大端
+                    MtiData.Mti_b[3-j] = *(data+n); //平台为小端，传输为大端
                     n++;
                 }
-                fchar[mti_packet++]=MtiData.Mti_a;    //循环把xyz的数据(已经是float数据了)存放在fchar[]
+                fchar[mti_packet++] = MtiData.Mti_a;    //循环把xyz的数据(已经是float数据了)存放在fchar[]
             }
-            MTI_ins.MTI_attitude.x= fchar[m++]*DEG_TO_RAD_MTI;  //fchar[0]
-            MTI_ins.MTI_attitude.y=-fchar[m++]*DEG_TO_RAD_MTI;  //fchar[1]
-            MTI_ins.MTI_attitude.z=wrap_360_cd_yaw(fchar[m++]-90)*DEG_TO_RAD_MTI; 
+           MTI_ins.MTI_Matrix.a.x = fchar[m++];
+           MTI_ins.MTI_Matrix.b.x = fchar[m++];
+           MTI_ins.MTI_Matrix.c.x = fchar[m++];
+           MTI_ins.MTI_Matrix.a.y = fchar[m++];
+           MTI_ins.MTI_Matrix.b.y = fchar[m++];
+           MTI_ins.MTI_Matrix.c.y = fchar[m++];
+           MTI_ins.MTI_Matrix.a.z = fchar[m++];
+           MTI_ins.MTI_Matrix.b.z = fchar[m++];
+           MTI_ins.MTI_Matrix.c.z = fchar[m++];
            break;
         case Accel:
 
@@ -236,11 +241,11 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData.Mti_b[3-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData.Mti_a;
+                fchar[mti_packet++] = MtiData.Mti_a;
             }
-            MTI_ins.MTI_acce.x= fchar[m++];
-            MTI_ins.MTI_acce.y=-fchar[m++]; //取反
-            MTI_ins.MTI_acce.z=-fchar[m++];
+            MTI_ins.MTI_acce.x = fchar[m++];
+            MTI_ins.MTI_acce.y = fchar[m++];//-fchar[m++]; //取反
+            MTI_ins.MTI_acce.z = fchar[m++];//-fchar[m++];
             break;
         case Turn_Rate:
             data_length=Len/4;   
@@ -251,11 +256,11 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData.Mti_b[3-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData.Mti_a;
+                fchar[mti_packet++] = MtiData.Mti_a;
             }
-            MTI_ins.MTI_Gyr.x= fchar[m++];
-            MTI_ins.MTI_Gyr.y=-fchar[m++];//取反
-            MTI_ins.MTI_Gyr.z=-fchar[m++];
+            MTI_ins.MTI_Gyr.x = fchar[m++];
+            MTI_ins.MTI_Gyr.y = fchar[m++];//-fchar[m++];//取反
+            MTI_ins.MTI_Gyr.z = fchar[m++];//-fchar[m++];
             break;
         case Velocity:
             data_length=3;
@@ -266,12 +271,12 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData1.Mti_buff[7-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData1.Mti_Data;
+                fchar[mti_packet++] = MtiData1.Mti_Data;
             }
             // y x的位置应该反了，现在改过来
-            MTI_ins.MTI_Velocity.x= fchar[m++]; //注意此处方向与上面不同需要看
-            MTI_ins.MTI_Velocity.y=-fchar[m++]; //取反
-            MTI_ins.MTI_Velocity.z=-fchar[m++];
+            MTI_ins.MTI_Velocity.x = fchar[m++];
+            MTI_ins.MTI_Velocity.y = fchar[m++];
+            MTI_ins.MTI_Velocity.z = fchar[m++];
             break;
         case Altitude:
             data_length=1;
@@ -282,9 +287,9 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData1.Mti_buff[7-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData1.Mti_Data;
+                fchar[mti_packet++] = MtiData1.Mti_Data;
             }
-            MTI_ins.MTI_Alt= fchar[m++];
+            MTI_ins.MTI_Alt = fchar[m++];
             break;
         case Lng_Lat:
             data_length=Len/8;
@@ -310,7 +315,7 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData.Mti_b[3-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData.Mti_c;
+                fchar[mti_packet ++]=MtiData.Mti_c;
             }
             MTI_ins.MTI_pressure= fchar[m++];
             break;
@@ -323,9 +328,9 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                     MtiData.Mti_b[3-j] = *(data + n);
                     n++;
                 }
-                fchar[mti_packet++]=MtiData.Mti_a;
+                fchar[mti_packet++] = MtiData.Mti_a;
             }
-            MTI_ins.MTI_temp= fchar[m++];
+            MTI_ins.MTI_temp = fchar[m++];
             break;
         default:
                 break;
@@ -333,17 +338,12 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
 
 }
 
-int AP_MTi_G::wrap_360_cd_yaw(int yaw_change)
-{
-    if(yaw_change<=0) return -yaw_change;
-    else return 360-yaw_change;
-}
 
 void AP_MTi_G:: Mtidata_push(void)
 {
     set_mti_acc(MTI_ins.MTI_acce);
     set_mti_gyr(MTI_ins.MTI_Gyr);
-    set_mti_attitude(MTI_ins.MTI_attitude);
+    set_mti_Matrix(MTI_ins.MTI_Matrix);
     set_mti_velocity(MTI_ins.MTI_Velocity);
     set_mti_location(MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_Alt);
     set_mti_pressure(MTI_ins.MTI_pressure);
@@ -359,26 +359,15 @@ void AP_MTi_G :: printf_serial5(void)
 {
     static int num = 0;
     num ++;
-    if(num >= 100)
+    if(num >= 250)
     {
-        hal.uartF->printf(" acc_x = %f\n acc_y = %f\n acc_z = %f\n",MTI_ins.MTI_acce.x,MTI_ins.MTI_acce.y,MTI_ins.MTI_acce.z);
-        hal.uartF->printf(" gyr_x = %f\n gyr_y = %f\n gyr_z = %f\n ",MTI_ins.MTI_Gyr.x,MTI_ins.MTI_Gyr.y,MTI_ins.MTI_Gyr.z);
-        hal.uartF->printf(" Alt = %lf\n speed_x = %f\n speed_y = %f\n speed_z = %f\n lat = %ld\n lon = %ld\n Press = %lf\n",MTI_ins.MTI_Alt,MTI_ins.MTI_Velocity.x,MTI_ins.MTI_Velocity.y,MTI_ins.MTI_Velocity.z,MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_pressure);
-        hal.uartF->printf(" roll = %f\n pitch = %f\n yew = %f\n",MTI_ins.MTI_attitude.x,MTI_ins.MTI_attitude.y,MTI_ins.MTI_attitude.z);
-        hal.uartF->printf(" T = %f\n",MTI_ins.MTI_temp);
+        hal.uartF->printf("%f %f %f\n%f %f %f\n%f %f %f\n",MTI_ins.MTI_Matrix.a.x,MTI_ins.MTI_Matrix.a.y,MTI_ins.MTI_Matrix.a.z,MTI_ins.MTI_Matrix.b.x,MTI_ins.MTI_Matrix.b.y,MTI_ins.MTI_Matrix.b.z,MTI_ins.MTI_Matrix.c.x,MTI_ins.MTI_Matrix.c.y,MTI_ins.MTI_Matrix.c.z);
         num = 0;
     }
 }
 
-void AP_MTi_G::getEulerAngles( Vector3f &eulers) const
+//dcm转eulers
+void AP_MTi_G::Matrix_to_eulers(Vector3f &eulers,Matrix3f &mat)const
 {
-      eulers = MTI_ins.MTI_attitude;
+    mat.to_euler(&eulers.x,&eulers.y,&eulers.z);
 }
-
-void AP_MTi_G::getRotationBodyToNED(Matrix3f &mat) const
-{
-    if (core) {
-        core[primary].getRotationBodyToNED(mat);
-    }
-}
-

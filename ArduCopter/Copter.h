@@ -243,7 +243,7 @@ public:
     // HAL::Callbacks implementation.
     void setup() override;
     void loop() override;
-
+    AP_MTi_G Mti_G; //by_sjx
 private:
     static const AP_FWVersion fwver;
 
@@ -272,7 +272,7 @@ private:
     AP_Logger logger;
 
     AP_GPS gps;
-    AP_MTi_G Mti_G; //by_sjx
+
     AP_TestUart uart5;
     // flight modes convenience array
     AP_Int8 *flight_modes;

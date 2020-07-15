@@ -21,6 +21,7 @@
 #include "AP_AHRS_View.h"
 #include <stdio.h>
 
+extern const AP_HAL::HAL& hal;
 AP_AHRS_View::AP_AHRS_View(AP_AHRS &_ahrs, enum Rotation _rotation, float pitch_trim_deg) :
     rotation(_rotation),
     ahrs(_ahrs)
@@ -60,9 +61,8 @@ void AP_AHRS_View::set_pitch_trim(float trim_deg) {
 // update state
 void AP_AHRS_View::update(bool skip_ins_update)
 {
-    rot_body_to_ned = ahrs.get_rotation_body_to_ned();
+    rot_body_to_ned = ahrs.get_rotation_body_to_ned();//表示当前姿态
     gyro = ahrs.get_gyro();
-    //if不进去
     if (!is_zero(y_angle + _pitch_trim_deg)) {
         rot_body_to_ned = rot_body_to_ned * rot_view_T;
         gyro = rot_view * gyro;

@@ -349,7 +349,7 @@ void NavEKF2_core::readIMUData()
     accelPosOffset = ins.get_imu_pos_offset(accel_index_active);
     imuDataNew.accel_index = accel_index_active;
 
-    // Get delta angle data from primary gyro or primary if not available
+    // Get delta angle data from primary gyro or primary if not available 从主陀螺仪获得角数据
     readDeltaAngle(gyro_index_active, imuDataNew.delAng, imuDataNew.delAngDT);
     imuDataNew.gyro_index = gyro_index_active;
 

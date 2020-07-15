@@ -544,16 +544,16 @@ void RC_Channel_Copter::do_aux_function(const aux_func_t ch_option, const aux_sw
         case AUX_FUNC ::CHANGEMTI:
             if(ch_flag == MIDDLE || ch_flag == HIGH)
             {
-                //copter.ahrs.set_ekf_type(4);
-                copter.ahrs.set_mti_flag(true);
-                copter.ahrs.set_Mti_flag(true);
+                copter.ahrs.set_ekf_type(4);
+              //  copter.ahrs.set_mti_flag(true);
+               // copter.ahrs.set_Mti_flag(true);
                 copter.ins.set_mti_raw_flag(true);
             }
             else if(ch_flag == LOW)
             {
-                //copter.ahrs.set_ekf_type(2);
-                copter.ahrs.set_mti_flag(false);
-                copter.ahrs.set_Mti_flag(false);
+                copter.ahrs.set_ekf_type(2);
+             //   copter.ahrs.set_mti_flag(false);
+              //  copter.ahrs.set_Mti_flag(false);
                 copter.ins.set_mti_raw_flag(false);
             }
     default:

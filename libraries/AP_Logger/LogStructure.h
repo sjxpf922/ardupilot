@@ -750,6 +750,9 @@ struct PACKED MTI_Attitude {
     float   gy_x;
     float   gy_y;
     float   gy_z;
+    float   ac_x;
+    float   ac_y;
+    float   ac_z;
 };
 
 struct PACKED log_PID {
@@ -1407,7 +1410,7 @@ struct PACKED log_Arm_Disarm {
     { LOG_OA_DIJKSTRA_MSG, sizeof(log_OADijkstra), \
       "OADJ","QBBBLLLL","TimeUS,State,CurrPoint,TotPoints,DLat,DLng,OALat,OALng", "sbbbDUDU", "F---GGGG" },\
     { LOG_ATTITUDE_MTI, sizeof( MTI_Attitude),\
-      "MTI", "QccCfff", "TimeUS,Roll,Pitch,Yaw,GryX,GryY,GryZ", "sddhkkk", "FBBB???" }
+      "MTI", "QccCffffff", "TimeUS,Roll,Pitch,Yaw,GryX,GryY,GryZ,AccX,AccY,AccZ", "sddhkkkooo", "FBBB???000" }
 // messages for more advanced boards
 #define LOG_EXTRA_STRUCTURES \
     { LOG_IMU2_MSG, sizeof(log_IMU), \

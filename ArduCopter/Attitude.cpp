@@ -126,12 +126,12 @@ float Copter::SurfaceTracking::adjust_climb_rate(float target_rate)
 {
 #if RANGEFINDER_ENABLED == ENABLED
     if (!copter.rangefinder_alt_ok()) {
-        // if rangefinder is not ok, do not use surface tracking
+        // if rangefinder is not ok, do not use surface tracking  如果测距仪不行，不要使用表面跟踪
         return target_rate;
     }
 
-    const float current_alt = copter.inertial_nav.get_altitude();
-    const float current_alt_target = copter.pos_control->get_alt_target();
+    const float current_alt = copter.inertial_nav.get_altitude();//得到当前高度
+    const float current_alt_target = copter.pos_control->get_alt_target();//期望高度
     float distance_error;
     float velocity_correction;
 
@@ -139,7 +139,7 @@ float Copter::SurfaceTracking::adjust_climb_rate(float target_rate)
 
     valid_for_logging = true;
 
-    // reset target altitude if this controller has just been engaged
+    // reset target altitude if this controller has just been engaged如果控制器忙碌复位期望高度
     if (now - last_update_ms > SURFACE_TRACKING_TIMEOUT_MS) {
         target_alt_cm = copter.rangefinder_state.alt_cm + current_alt_target - current_alt;
     }

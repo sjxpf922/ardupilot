@@ -22,7 +22,8 @@
 #include <assert.h>
 #endif
 #include <math.h>
-
+/*class AP_MTi_G;
+class AP_AHRS;*/
 class Quaternion {
 public:
     float        q1, q2, q3, q4;
@@ -72,7 +73,7 @@ public:
 
     // convert a vector from earth to body frame
     void        earth_to_body(Vector3f &v) const;
-
+    void        from_mti_quat(const Quaternion &m);
     // create a quaternion from Euler angles
     void        from_euler(float roll, float pitch, float yaw);
 
@@ -144,4 +145,6 @@ public:
 
     // angular difference between quaternions
     Quaternion angular_difference(const Quaternion &v) const;
+  // AP_MTi_G *MTi_G;
+  //  AP_AHRS *ahrs;
 };

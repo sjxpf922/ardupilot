@@ -64,11 +64,14 @@ void Copter::Log_Write_Attitude()
     Vector3f targets = attitude_control->get_att_target_euler_cd();
     targets.z = wrap_360_cd(targets.z);
     Vector3f eulers;
-    Mti_G.getEulerAngles(eulers);
+   // Mti_G.getEulerAngles(eulers);  //mti输出eulers时用的
+    Mti_G.Matrix_to_eulers(eulers,Mti_G.MTI_EKF._MTI_Matrix);   //mti输出QUAT时用的
     Vector3f gyro;
+    Vector3f acc;
     gyro = Mti_G.get_mti_gyr();
+    acc  = Mti_G.get_mti_acc();
     logger.Write_Attitude(ahrs, targets);//记录日志中的ATT9个参数
-    logger.Write_Attitude_mti(eulers,gyro);
+    logger.Write_Attitude_mti(eulers,gyro,acc);
     logger.Write_Rate(ahrs_view, *motors, *attitude_control, *pos_control);//记录IMU和IMU2
     if (should_log(MASK_LOG_PID)) {
         logger.Write_PID(LOG_PIDR_MSG, attitude_control->get_rate_roll_pid().get_pid_info());

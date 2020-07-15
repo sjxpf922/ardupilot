@@ -125,7 +125,7 @@ private:
     // primary representation of attitude of board used for all inertial calculations
     Matrix3f _dcm_matrix;
 
-    // primary representation of attitude of flight vehicle body
+    // primary representation of attitude of flight vehicle body 飞行器机身姿态的主要表示
     Matrix3f _body_dcm_matrix;
 
     Vector3f _omega_P;                          // accel Omega proportional correction

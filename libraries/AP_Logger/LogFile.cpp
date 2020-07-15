@@ -614,7 +614,7 @@ void AP_Logger::Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets)
         error_yaw       : (uint16_t)(ahrs.get_error_yaw() * 100)
     };
     WriteBlock(&pkt, sizeof(pkt));
-    hal.uartF->printf("ATT\n");
+  //  hal.uartF->printf("ATT\n");
 }
 
 // Write an attitude packet
@@ -635,7 +635,7 @@ void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets) 
     WriteBlock(&pkt, sizeof(pkt));
 }
 
-void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro)
+void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f acc)
 {
     const struct MTI_Attitude pkt{
               LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MTI),
@@ -646,6 +646,9 @@ void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro)
               gy_x            : degrees(gyro.x),
               gy_y            : degrees(gyro.y),
               gy_z            : degrees(gyro.z),
+              ac_x            : acc.x,
+              ac_y            : acc.y,
+              ac_z            : acc.z,
     };
     WriteBlock(&pkt, sizeof(pkt));
 }

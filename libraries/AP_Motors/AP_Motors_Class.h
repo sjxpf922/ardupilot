@@ -93,7 +93,7 @@ public:
     void                set_forward(float forward_in) { _forward_in = forward_in; }; // range -1 ~ +1
     void                set_lateral(float lateral_in) { _lateral_in = lateral_in; };     // range -1 ~ +1
 
-    // accessors for roll, pitch, yaw and throttle inputs to motors
+    // accessors for roll, pitch, yaw and throttle inputs to motors  //输入给电机的变量
     float               get_roll() const { return _roll_in; }
     float               get_pitch() const { return _pitch_in; }
     float               get_yaw() const { return _yaw_in; }

@@ -708,9 +708,9 @@ void NavEKF2_core::UpdateStrapdownEquationsNED()
 /*
  * Propagate PVA solution forward from the fusion time horizon to the current time horizon
  * using simple observer which performs two functions:
- * 1) Corrects for the delayed time horizon used by the EKF.
+ * 1) Corrects for the delayed time horizon used by the EKF.校正EKF延时范围
  * 2) Applies a LPF to state corrections to prevent 'stepping' in states due to measurement
- * fusion introducing unwanted noise into the control loops.
+ * fusion introducing unwanted noise into the control loops. 应用LPF对状态校正，以防止由于测量融合而在状态中引入不必要的噪声。
  * The inspiration for using a complementary filter to correct for time delays in the EKF
  * is based on the work by A Khosravian.
  *
@@ -719,21 +719,21 @@ void NavEKF2_core::UpdateStrapdownEquationsNED()
 */
 void NavEKF2_core::calcOutputStates()
 {
-    // apply corrections to the IMU data
+    // apply corrections to the IMU data  校正IMU数据
     Vector3f delAngNewCorrected = imuDataNew.delAng;
     Vector3f delVelNewCorrected = imuDataNew.delVel;
     correctDeltaAngle(delAngNewCorrected, imuDataNew.delAngDT, imuDataNew.gyro_index);
     correctDeltaVelocity(delVelNewCorrected, imuDataNew.delVelDT, imuDataNew.accel_index);
 
-    // apply corections to track EKF solution
+    // apply corections to track EKF solution                                                                  应用修正跟踪EKF解决方案
     Vector3f delAng = delAngNewCorrected + delAngCorrection;
 
-    // convert the rotation vector to its equivalent quaternion
+    // convert the rotation vector to its equivalent quaternion                                             将旋转向量转换为等效的四元数
     Quaternion deltaQuat;
     deltaQuat.from_axis_angle(delAng);
 
     // update the quaternion states by rotating from the previous attitude through
-    // the delta angle rotation quaternion and normalise
+    // the delta angle rotation quaternion and normalise                                                      通过三角角旋转四元数更新四元数状态并进行归一化
     outputDataNew.quat *= deltaQuat;
     outputDataNew.quat.normalize();
 
@@ -805,7 +805,7 @@ void NavEKF2_core::calcOutputStates()
         // adjust for changes in time delay to maintain consistent damping ratio of ~0.7
         float timeDelay = 1e-3f * (float)(imuDataNew.time_ms - imuDataDelayed.time_ms);
         timeDelay = fmaxf(timeDelay, dtIMUavg);
-        float errorGain = 0.5f / timeDelay;
+        float errorGain = 0.5f / timeDelay;  // 卡尔曼增益
 
         // calculate a corrrection to the delta angle
         // that will cause the INS to track the EKF quaternions

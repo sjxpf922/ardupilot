@@ -54,7 +54,6 @@ public:
     // return the smoothed gyro vector corrected for drift
     const Vector3f &get_gyro(void) const override;
     const Matrix3f &get_rotation_body_to_ned(void) const override;
-
     // return the current drift correction integrator value
     const Vector3f &get_gyro_drift(void) const override;
 
@@ -300,7 +299,7 @@ private:
     // rotation from vehicle body to NED frame
     Matrix3f _dcm_matrix;
     Vector3f _dcm_attitude;
-    
+
     Vector3f _gyro_drift;
     Vector3f _gyro_estimate;
     Vector3f _accel_ef_ekf[INS_MAX_INSTANCES];

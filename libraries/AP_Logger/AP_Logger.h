@@ -251,7 +251,7 @@ public:
     void Write_ESC(uint8_t id, uint64_t time_us, int32_t rpm, uint16_t voltage, uint16_t current, int16_t temperature, uint16_t current_tot);
     void Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets);
     void Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets);
-    void Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro);
+    void Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f acc);
     void Write_Current();
     void Write_Compass(uint64_t time_us=0);
     void Write_Mode(uint8_t mode, uint8_t reason);

@@ -112,7 +112,7 @@ void AC_PID::filt_D_hz(float hz)
 //  update_all - set target and measured inputs to PID controller and calculate outputs
 //  target and error are filtered
 //  the derivative is then calculated and filtered
-//  the integral is then updated based on the setting of the limit flag
+//  the integral is then updated based on the setting of the limit flag 设置目标和测量的输入到PID控制器和计算的输出目标和误差过滤，然后计算和过滤的导数，然后根据限制标志的设置更新积分
 float AC_PID::update_all(float target, float measurement, bool limit)
 {
     // don't process inf or NaN

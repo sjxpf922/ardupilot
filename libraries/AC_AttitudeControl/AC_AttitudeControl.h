@@ -116,7 +116,7 @@ public:
     // Sets attitude target to vehicle attitude
     void set_attitude_target_to_current_attitude() { _ahrs.get_quat_body_to_ned(_attitude_target_quat); }
 
-    // Sets yaw target to vehicle heading
+    // Sets yaw target to vehicle heading设置目标航向为机头方向。
     void set_yaw_target_to_current_heading() { shift_ef_yaw_target(degrees(_ahrs.yaw - _attitude_target_euler_angle.z) * 100.0f); }
 
     // Shifts earth frame yaw target by yaw_shift_cd. yaw_shift_cd should be in centidegrees and is added to the current target heading
@@ -361,28 +361,28 @@ protected:
     float               _dt;
 
     // This represents a 321-intrinsic rotation in NED frame to the target (setpoint)
-    // attitude used in the attitude controller, in radians.
+    // attitude used in the attitude controller, in radians. 目标姿态角 单位弧度
     Vector3f            _attitude_target_euler_angle;
 
     // This represents the angular velocity of the target (setpoint) attitude used in
     // the attitude controller as 321-intrinsic euler angle derivatives, in radians per
     // second.
-    Vector3f            _attitude_target_euler_rate;
+    Vector3f            _attitude_target_euler_rate;        //目标角速率   弧度/秒
 
     // This represents a quaternion rotation in NED frame to the target (setpoint)
     // attitude used in the attitude controller.
-    Quaternion          _attitude_target_quat;
+    Quaternion          _attitude_target_quat;//当前目标姿态
 
     // This represents the angular velocity of the target (setpoint) attitude used in
     // the attitude controller as an angular velocity vector, in radians per second in
     // the target attitude frame.
-    Vector3f            _attitude_target_ang_vel;
+    Vector3f            _attitude_target_ang_vel;  //它表示目标(设定点)姿态的角速度，在姿态控制器中用作角速度矢量，在目标姿态框架中以弧度/秒为单位 用作前馈
 
     // This represents the angular velocity in radians per second in the body frame, used in the angular
     // velocity controller.
-    Vector3f            _rate_target_ang_vel;
+    Vector3f            _rate_target_ang_vel;  //在角速度控制器中，它表示在体轴系下以弧度每秒表示的角速度。
 
-    // This represents a quaternion attitude error in the body frame, used for inertial frame reset handling.
+    // This represents a quaternion attitude error in the body frame, used for inertial frame reset handling. 这表示机体坐标系的四元数姿态误差，用于惯性系重置。
     Quaternion          _attitude_ang_error;
 
     // The angle between the target thrust vector and the current thrust vector.
@@ -412,7 +412,6 @@ protected:
     const AP_AHRS_View&  _ahrs;
     const AP_Vehicle::MultiCopter &_aparm;
     AP_Motors&          _motors;
-
 protected:
     /*
       state of control monitoring
