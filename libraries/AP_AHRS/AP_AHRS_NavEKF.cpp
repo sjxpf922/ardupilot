@@ -37,28 +37,53 @@ extern const AP_HAL::HAL& hal;
 // constructor
 AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
                                NavEKF3 &_EKF3,
+                               AP_MTi_G & _MTi_G,
                                Flags flags) :
     AP_AHRS_DCM(),
     EKF2(_EKF2),
     EKF3(_EKF3),
+    MTi_G(_MTi_G),
     _ekf_flags(flags)
 {
     _dcm_matrix.identity();
 }
 
+void AP_AHRS_NavEKF::Print_mti(void)
+{
+    if(use_mti == 1)
+    {
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"using_mti");
+    }
+    else
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"using_imu");
+}
 // return the smoothed gyro vector corrected for drift
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
 {
-    if (!active_EKF_type()) {
-        return AP_AHRS_DCM::get_gyro();
+  //  if (!active_EKF_type()) {
+  //      return AP_AHRS_DCM::get_gyro();
+  //  }
+  //  return _gyro_estimate;
+    if(use_mti == 1)
+    {
+        return MTi_gyro;
     }
-    return _gyro_estimate;
+    else if(active_EKF_type())
+    {
+        return _gyro_estimate;
+    }
+    else
+        return AP_AHRS_DCM::get_gyro();
 }
 
 const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
 {
     if (!active_EKF_type()) {
         return AP_AHRS_DCM::get_rotation_body_to_ned();
+    }
+    if(use_mti == 1)
+    {
+        return mti_matrix;
     }
     return _dcm_matrix;
 }
@@ -94,7 +119,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     // drop back to normal priority if we were boosted by the INS
     // calling delay_microseconds_boost()
     hal.scheduler->boost_end();
-    
+
     // EKF1 is no longer supported - handle case where it is selected
     if (_ekf_type == 1) {
         _ekf_type.set(2);
@@ -106,11 +131,15 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
     update_SITL();
 #endif
 
-    if (_ekf_type == 2) {
+  if (_ekf_type == 2) {
         // if EK2 is primary then run EKF2 first to give it CPU
         // priority
         update_EKF2();
         update_EKF3();
+        if(use_mti == 1)
+        {
+            Upata_Get_MTi();
+        }
     } else {
         // otherwise run EKF3 first
         update_EKF3();
@@ -302,6 +331,20 @@ void AP_AHRS_NavEKF::update_EKF3(void)
     }
 }
 
+//获取MTi数据
+void AP_AHRS_NavEKF::Upata_Get_MTi(void)
+{
+    Vector3f eulers;
+    mti_matrix = MTi_G.get_mti_Matrix();
+    MTi_G.Matrix_to_eulers(eulers,mti_matrix);
+    roll  = eulers.x;
+    pitch = eulers.y;
+    yaw   = eulers.z;
+
+    update_cd_values();
+
+    MTi_gyro = MTi_G.get_mti_gyr();
+}
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
 void AP_AHRS_NavEKF::update_SITL(void)
 {

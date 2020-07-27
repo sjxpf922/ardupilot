@@ -9,6 +9,13 @@ void Plane::Log_Write_Attitude(void)
     targets.x = nav_roll_cd;
     targets.y = nav_pitch_cd;
 
+    Vector3f eulers;
+    Mti_G.Matrix_to_eulers(eulers,Mti_G.MTI_EKF._MTI_Matrix);
+    Vector3f gyro;
+    Vector3f acc;
+    gyro = Mti_G.get_mti_gyr();
+    acc  = Mti_G.get_mti_acc();
+    logger.Write_Attitude_mti(eulers,gyro,acc);
     if (quadplane.in_vtol_mode() || quadplane.in_assisted_flight()) {
         // when VTOL active log the copter target yaw
         targets.z = wrap_360_cd(quadplane.attitude_control->get_att_target_euler_cd().z);

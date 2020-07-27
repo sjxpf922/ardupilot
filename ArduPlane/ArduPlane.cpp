@@ -142,6 +142,8 @@ void Plane::ahrs_update()
 #endif
 
     ahrs.update();
+    plane.Mti_G.Read_Mti_AHRS();
+    plane.uart5.ChangeSpeed();
 
     if (should_log(MASK_LOG_IMU)) {
         logger.Write_IMU();
@@ -291,6 +293,7 @@ void Plane::one_second_loop()
             // reset the landing altitude correction
             landing.alt_offset = 0;
     }
+    ahrs.Print_mti();
 }
 
 void Plane::compass_save()

@@ -101,6 +101,9 @@
 #include "quadplane.h"
 #include "tuning.h"
 
+//by_sjx
+#include <AP_TestUart/AP_TestUart.h>
+#include <AP_MTi_G/AP_MTi_G.h>
 // Configuration
 #include "config.h"
 
@@ -233,7 +236,7 @@ private:
 #if AP_AHRS_NAVEKF_AVAILABLE
     NavEKF2 EKF2{&ahrs, rangefinder};
     NavEKF3 EKF3{&ahrs, rangefinder};
-    AP_AHRS_NavEKF ahrs{EKF2, EKF3};
+    AP_AHRS_NavEKF ahrs{EKF2, EKF3,Mti_G};
 #else
     AP_AHRS_DCM ahrs;
 #endif
@@ -334,6 +337,8 @@ private:
     ModeQAutotune mode_qautotune;
     ModeTakeoff mode_takeoff;
 
+    AP_MTi_G Mti_G; //by_sjx
+    AP_TestUart uart5;//by_sjx
     // This is the state of the flight control system
     // There are multiple states defined such as MANUAL, FBW-A, AUTO
     Mode *control_mode = &mode_initializing;

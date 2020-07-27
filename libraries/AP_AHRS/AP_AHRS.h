@@ -28,6 +28,7 @@
 #include <AP_InertialSensor/AP_InertialSensor.h>
 #include <AP_Param/AP_Param.h>
 #include <AP_Common/Location.h>
+#include <AP_MTi_G/AP_MTi_G.H>
 
 class AP_NMEA_Output;
 class OpticalFlow;
@@ -581,6 +582,7 @@ public:
         return _rsem;
     }
 
+    void set_use_mti(uint8_t num){use_mti = num;} //用来改变标志位，切换Mti
 protected:
     void update_nmea_out();
 
@@ -608,6 +610,7 @@ protected:
 
     Matrix3f _custom_rotation;
 
+    AP_Int8 use_mti;
     // flags structure
     struct ahrs_flags {
         uint8_t have_initial_yaw        : 1;    // whether the yaw value has been intialised with a reference
