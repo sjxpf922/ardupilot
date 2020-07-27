@@ -175,6 +175,10 @@ void AP_AHRS::init()
 // return a smoothed and corrected gyro vector using the latest ins data (which may not have been consumed by the EKF yet)
 Vector3f AP_AHRS::get_gyro_latest(void) const
 {
+    if(use_mti == 1)
+    {
+        return get_gyro();
+    }
     const uint8_t primary_gyro = get_primary_gyro_index();
     return AP::ins().get_gyro(primary_gyro) + get_gyro_drift();
 }

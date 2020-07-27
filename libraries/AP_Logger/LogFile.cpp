@@ -634,6 +634,23 @@ void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
     WriteBlock(&pkt, sizeof(pkt));
 }
 
+void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f acc)
+{
+    const struct MTI_Attitude pkt{
+              LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MTI),
+              time_us         : AP_HAL::micros64(),
+              roll            : (int16_t)(degrees(eulers.x) * 100),
+              pitch           : (int16_t)(degrees(eulers.y) * 100),
+              yaw             : (uint16_t)wrap_360_cd(degrees(eulers.z) * 100),
+              gy_x            : degrees(gyro.x),
+              gy_y            : degrees(gyro.y),
+              gy_z            : degrees(gyro.z),
+              ac_x            : acc.x,
+              ac_y            : acc.y,
+              ac_z            : acc.z,
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
 void AP_Logger::Write_Current_instance(const uint64_t time_us,
                                                  const uint8_t battery_instance,
                                                  const enum LogMessages type,

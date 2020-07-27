@@ -119,13 +119,13 @@ void GCS_MAVLINK_Plane::send_attitude() const
     float r = ahrs.roll;
     float p = ahrs.pitch - radians(plane.g.pitch_trim_cd*0.01f);
     float y = ahrs.yaw;
-    
+
     if (plane.quadplane.in_vtol_mode()) {
         r = plane.quadplane.ahrs_view->roll;
         p = plane.quadplane.ahrs_view->pitch;
         y = plane.quadplane.ahrs_view->yaw;
     }
-    
+
     const Vector3f &omega = ahrs.get_gyro();
     mavlink_msg_attitude_send(
         chan,

@@ -16,6 +16,7 @@
 #include <AP_Proximity/AP_Proximity.h>
 #include <AP_InertialSensor/AP_InertialSensor_Backend.h>
 
+#include <AP_MTi_G/AP_MTi_G.h>
 #include <stdint.h>
 
 #include "LoggerMessageWriter.h"
@@ -24,6 +25,7 @@ class AP_Logger_Backend;
 class AP_AHRS;
 class AP_AHRS_View;
 
+class AP_MTi_G;
 // do not do anything here apart from add stuff; maintaining older
 // entries means log analysis is easier
 enum Log_Event : uint8_t {
@@ -250,6 +252,7 @@ public:
     void Write_ESC(uint8_t id, uint64_t time_us, int32_t rpm, uint16_t voltage, uint16_t current, int16_t temperature, uint16_t current_tot);
     void Write_Attitude(AP_AHRS &ahrs, const Vector3f &targets);
     void Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets);
+    void Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f acc);//by_sjx
     void Write_Current();
     void Write_Compass(uint64_t time_us=0);
     void Write_Mode(uint8_t mode, uint8_t reason);
@@ -518,7 +521,7 @@ private:
     int16_t get_log_data(uint16_t log_num, uint16_t page, uint32_t offset, uint16_t len, uint8_t *data);
 
     /* end support for retrieving logs via mavlink: */
-
+    AP_MTi_G Mti_G;
 };
 
 namespace AP {
