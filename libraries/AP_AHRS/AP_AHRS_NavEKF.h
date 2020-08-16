@@ -286,6 +286,9 @@ private:
     //by_sjx
     AP_MTi_G &MTi_G;
     Vector3f MTi_gyro;
+    Vector3f MTi_acc;
+    Vector3f MTi_acc_ef_ekf_blended;
+    bool mti_gps_valid; // true->GPS_FIX_3D;false -> not GPS_FIX_3D
 
     NavEKF2 &EKF2;
     NavEKF3 &EKF3;

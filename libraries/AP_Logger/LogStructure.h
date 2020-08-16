@@ -742,6 +742,15 @@ struct PACKED log_Attitude {
     uint16_t error_yaw;
 };
 
+//¼ÇÂ¼MTI¡¢imuµÄacc_ef_ekf_blended
+struct PACKED log_Attitude1 {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float   ac_x;
+    float   ac_y;
+    float   ac_z;
+    float accel_x, accel_y, accel_z;
+};
 struct PACKED MTI_Attitude {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -754,6 +763,26 @@ struct PACKED MTI_Attitude {
     float   ac_x;
     float   ac_y;
     float   ac_z;
+    int32_t lat;
+    int32_t lng;
+    float alt;
+
+};
+struct PACKED MTI_EKF_POS {
+    LOG_PACKET_HEADER;
+    uint64_t time_us;
+    float mti_pos_x;
+    float mti_pos_y;
+    float mti_pos_z;
+    float ekf_pos_x;
+    float ekf_pos_y;
+    float ekf_pos_z;
+    float M_Vx;
+    float M_Vy;
+    float M_Vz;
+    float E_Vx;
+    float E_Vy;
+    float E_Vz;
 };
 struct PACKED log_PID {
     LOG_PACKET_HEADER;
@@ -1410,7 +1439,11 @@ struct PACKED log_Arm_Disarm {
     { LOG_OA_DIJKSTRA_MSG, sizeof(log_OADijkstra), \
       "OADJ","QBBBLLLL","TimeUS,State,CurrPoint,TotPoints,DLat,DLng,OALat,OALng", "sbbbDUDU", "F---GGGG" },\
     { LOG_ATTITUDE_MTI, sizeof( MTI_Attitude),\
-      "MTI", "QccCffffff", "TimeUS,Roll,Pitch,Yaw,GryX,GryY,GryZ,AccX,AccY,AccZ", "sddhkkkooo", "FBBB???000" }
+      "MTI", "QccCffffffLLf", "TimeUS,Roll,Pitch,Yaw,GryX,GryY,GryZ,AccX,AccY,AccZ,Lat,Lng,Alt", "sddhkkkoooDUm", "FBBB???000GG0" },\
+    { LOG_POS_XYZ_MTI_EKF, sizeof( MTI_EKF_POS),\
+      "MTI2", "Qffffffffffff", "TimeUS,M_Px,M_Py,M_Pz,E_Px,E_Py,E_Pz,M_Vx,M_Vy,M_Vz,E_Vx,E_Vy,E_Vz", "smmmmmmnnnnnn", "F000000000000" },\
+    { LOG_EKF_ACC_MSG, sizeof( log_Attitude1),\
+      "ACC", "Qffffff", "TimeUS,M_Ax,M_Ay,M_Az,E_Ax,E_Ay,E_Az", "soooooo", "F000000" }
 // messages for more advanced boards
 #define LOG_EXTRA_STRUCTURES \
     { LOG_IMU2_MSG, sizeof(log_IMU), \
@@ -1785,6 +1818,8 @@ enum LogMessages : uint8_t {
     LOG_OA_BENDYRULER_MSG,
     LOG_OA_DIJKSTRA_MSG,
     LOG_ATTITUDE_MTI,
+    LOG_POS_XYZ_MTI_EKF,
+    LOG_EKF_ACC_MSG,
     _LOG_LAST_MSG_
 };
 

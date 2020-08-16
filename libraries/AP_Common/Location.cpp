@@ -184,6 +184,16 @@ bool Location::get_alt_cm(AltFrame desired_frame, int32_t &ret_alt_cm) const
     return false;
 }
 
+bool Location::get_mti_xy_from_origin_D(float &mti_posD) const
+{
+    Location ekf_origin;
+    if (!AP::ahrs().get_origin(ekf_origin)) {
+        return false;
+    }
+    mti_posD = (ekf_origin.alt-alt);
+    return true;
+}
+
 bool Location::get_vector_xy_from_origin_NE(Vector2f &vec_ne) const
 {
     Location ekf_origin;

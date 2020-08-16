@@ -43,13 +43,23 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
     EKF2(_EKF2),
     EKF3(_EKF3),
     MTi_G(_MTi_G),
-    _ekf_flags(flags)
+    _ekf_flags(flags),
+    mti_gps_valid(false)
 {
     _dcm_matrix.identity();
 }
 
 void AP_AHRS_NavEKF::Print_mti(void)
 {
+    if(MTi_G.get_mti_fixtype() == 3)
+    {
+        mti_gps_valid = true;
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"MTI_GPS_FIX_3D");//若要替换位置数据，一定要等地面站显示MTI_GPS_FIX_3D才行
+    }
+    else
+    {
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"MTI_NO_GPS"); //MTI定位不佳，不适合替换位置数据部分
+    }
     if(use_mti == 1)
     {
         gcs().send_text(MAV_SEVERITY_CRITICAL,"using_mti");
@@ -343,6 +353,8 @@ void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 
     update_cd_values();
 
+    MTi_acc  = MTi_G.get_mti_acc();
+    MTi_acc_ef_ekf_blended = mti_matrix * MTi_acc;
     MTi_gyro = MTi_G.get_mti_gyr();
 }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -409,6 +421,10 @@ const Vector3f &AP_AHRS_NavEKF::get_accel_ef(uint8_t i) const
     if (active_EKF_type() == EKF_TYPE_NONE) {
         return AP_AHRS_DCM::get_accel_ef(i);
     }
+    if(use_mti == 1 && mti_gps_valid)
+    {
+        return MTi_acc;
+    }
     return _accel_ef_ekf[i];
 }
 
@@ -417,6 +433,10 @@ const Vector3f &AP_AHRS_NavEKF::get_accel_ef_blended(void) const
 {
     if (active_EKF_type() == EKF_TYPE_NONE) {
         return AP_AHRS_DCM::get_accel_ef_blended();
+    }
+    if(use_mti == 1 && mti_gps_valid)
+    {
+        return MTi_acc_ef_ekf_blended;
     }
     return _accel_ef_ekf_blended;
 }
@@ -630,6 +650,10 @@ Vector2f AP_AHRS_NavEKF::groundspeed_vector(void)
     case EKF_TYPE2:
     default:
         EKF2.getVelNED(-1,vec);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            MTi_G.Get_MTi_Vel(vec);
+        }
         return Vector2f(vec.x, vec.y);
 
     case EKF_TYPE3:
@@ -698,6 +722,10 @@ bool AP_AHRS_NavEKF::get_velocity_NED(Vector3f &vec) const
     case EKF_TYPE2:
     default:
         EKF2.getVelNED(-1,vec);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            MTi_G.Get_MTi_Vel(vec);
+        }
         return true;
 
     case EKF_TYPE3:
@@ -901,6 +929,10 @@ bool AP_AHRS_NavEKF::get_relative_position_NE_origin(Vector2f &posNE) const
     case EKF_TYPE2:
     default: {
         bool position_is_valid = EKF2.getPosNE(-1,posNE);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            position_is_valid = MTi_G.Get_MTi_Position_NE(posNE);
+        }
         return position_is_valid;
     }
 
@@ -952,6 +984,10 @@ bool AP_AHRS_NavEKF::get_relative_position_D_origin(float &posD) const
     case EKF_TYPE2:
     default: {
         bool position_is_valid = EKF2.getPosD(-1,posD);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            position_is_valid = MTi_G.Get_MTi_Position_D(posD);
+        }
         return position_is_valid;
     }
 

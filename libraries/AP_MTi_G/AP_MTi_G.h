@@ -8,6 +8,8 @@
 #include <AP_SerialManager/AP_SerialManager.h>
 #include <AP_HAL/utility/RingBuffer.h>
 #include <AP_Math/AP_Math.h>
+#include <AP_Common/AP_Common.h>
+#include "AP_Common/Location.h"
 
 #define DEG_TO_RAD_MTI        0.0174532925f
 class AP_MTi_G {
@@ -39,6 +41,7 @@ public:
     Vector3f get_mti_velocity(void)const{return MTI_EKF._MTI_Velocity;}
 
     void set_mti_location(int32_t mti_lat , int32_t mti_lon, double mti_alt ){MTI_EKF._MTI_Lat = mti_lat;MTI_EKF._MTI_Lon = mti_lon ; MTI_EKF._MTI_Alt = mti_alt;}
+    const Location &Get_MTi_LLH() const {   return Mti_Loc; }
 
     void set_mti_pressure(double mti_pressure){MTI_EKF._MTI_pressure = mti_pressure;}
     double get_mti_pressure(void)const{return MTI_EKF._MTI_pressure;}
@@ -46,6 +49,11 @@ public:
     void Get_MTi_Loc(struct Location & loc)const;
     void printf_serial5(void);
     void Matrix_to_eulers(Vector3f &eulers,Matrix3f &mat)const;
+    bool Get_MTi_Position_NE(Vector2f &posNE)const;
+    bool Get_MTi_Position_D(float &posD)const;
+    void Set_MTi_LLH(void);
+    void Get_MTi_Vel(Vector3f &vel) const;
+    uint8_t get_mti_fixtype(void) const {return MTi_gps.fixtype;}
     struct  {
                Vector3f  _MTI_acce;  //m/s^2  NED body
                Vector3f  _MTI_Gyr;   //rad/s
@@ -60,7 +68,6 @@ public:
            }  MTI_EKF;
    private:
     uint8_t primary;   // current primary core
-    //uint8_t mti_state;             //
     uint16_t checksum;              //校验和
     uint8_t MID;                   //Message identifier
     uint8_t MessLen;              //有效数据长度
@@ -76,8 +83,7 @@ public:
     float  q3;
     float  q4;
     enum{
-            //Attitude_Angle = 0,  //姿态角
-            Mti_Matrix = 0,        //四元数
+            Mti_Matrix = 0,      //旋转矩阵
             Accel             ,  //加速度
             Turn_Rate         ,  //转速
             Velocity          ,  //速度
@@ -85,6 +91,7 @@ public:
             Lng_Lat           ,  //经纬高
             Air_Pressure      ,  //气压
             Tempeature        ,  //温度
+            Gps_Data          ,  //GPS状态
     };
     struct PACKED HEAR{
         enum{
@@ -106,12 +113,22 @@ public:
             Vector3f  MTI_magn;
             int32_t   MTI_Lat;//*10e7
             int32_t   MTI_Lon;//*10e7
-            double    MTI_Alt;//cm
+            double    MTI_Alt;//m
             double    MTI_pressure;
             float     MTI_temp;
         }  MTI_ins;
 
+    struct {
+            uint8_t fixtype;       //定位状态 0- No Fix;1-Dead Reckoning only;2- 2D-Fix;3-3D-Fix;4- GNSS + dead reckoning combined
+            uint8_t num_satellite;//卫星数量
+            uint16_t gdop; //几何精度因子*100
+            uint16_t pdop; //位置精度因子*100
+            uint16_t tdop; //时钟精度因子*100
+            uint16_t vdop; //垂直精度因子*100
+            uint16_t hdop; //水平精度因子*100
+        }MTi_gps;
 
+    struct Location Mti_Loc;
     AP_HAL::UARTDriver *_port;                  // UART used to send data to FrSky receiver
     AP_SerialManager::SerialProtocol _protocol; // protocol used - detected using SerialManager's SERIAL#_PROTOCOL parameter
 

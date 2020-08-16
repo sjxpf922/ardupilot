@@ -63,7 +63,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         if((checksum&0xff) == 0)
         {
             Mtidata_push();
-          //  printf_serial5();
+            printf_serial5();
         }
     }
    switch(MTi.mti_state)
@@ -102,8 +102,11 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
                 MTi.mti_state = HEAR::PREAMBLE1;
                 checksum = 0;
             }
-            MTi.mti_state = HEAR::DATALENGTH;
-            checksum += temp;
+            else
+            {
+                MTi.mti_state = HEAR::DATALENGTH;
+                checksum += temp;
+            }
             break;
         case HEAR::DATALENGTH:
             MessLen = temp;
@@ -165,6 +168,12 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
                    MTi.mti_state = HEAR::DATALEN;
                    p_data = 0;
                 }
+                else if(buff[0] == 0x70&& buff[1] == 0x10)
+                {
+                   DataId = Gps_Data;
+                   MTi.mti_state = HEAR::DATALEN;
+                   p_data = 0;
+                }
                 else
                     p_data = 0;
             }
@@ -206,8 +215,16 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
             double Mti_Data;
             uint8_t Mti_buff[8];
         } MtiData1;         //用来解析double数据
+
+    union PACKED mess_U16
+    {
+        uint16_t Mti_Gps;
+        uint8_t Mti_buff[2];
+    } MtiData2;
+
     int n = 0,m = 0,data_length,mti_packet=0;
     double  fchar[18];  
+
     switch(ID)
     {
         case Mti_Matrix:
@@ -273,7 +290,6 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
                 }
                 fchar[mti_packet++] = MtiData1.Mti_Data;
             }
-            // y x的位置应该反了，现在改过来
             MTI_ins.MTI_Velocity.x = fchar[m++];
             MTI_ins.MTI_Velocity.y = fchar[m++];
             MTI_ins.MTI_Velocity.z = fchar[m++];
@@ -332,6 +348,24 @@ void AP_MTi_G :: Mti_Parsing(uint8_t ID,uint8_t * data,uint8_t Len)
             }
             MTI_ins.MTI_temp = fchar[m++];
             break;
+        case Gps_Data:
+            MTi_gps.fixtype = *(data + 20);
+            MTi_gps. num_satellite = *(data + 22);
+            for(int i = 0;i < 5; i++)
+            {
+                for(int j = 0;j < 2;j++)
+                {
+                    MtiData2.Mti_buff[1-j] = *(data + 80 + n );
+                    n++;
+                }
+                fchar[mti_packet++] = MtiData2.Mti_Gps;
+            }
+            MTi_gps.gdop = fchar[m++];
+            MTi_gps.pdop = fchar[m++];
+            MTi_gps.tdop = fchar[m++];
+            MTi_gps.vdop = fchar[m++];
+            MTi_gps.hdop = fchar[m++];
+            break;
         default:
                 break;
     }
@@ -345,15 +379,42 @@ void AP_MTi_G:: Mtidata_push(void)
     set_mti_gyr(MTI_ins.MTI_Gyr);
     set_mti_Matrix(MTI_ins.MTI_Matrix);
     set_mti_velocity(MTI_ins.MTI_Velocity);
-    set_mti_location(MTI_ins.MTI_Lat,MTI_ins.MTI_Lon,MTI_ins.MTI_Alt);
+    Set_MTi_LLH();
     set_mti_pressure(MTI_ins.MTI_pressure);
 }
-//获取MTi传感器的位置信息
-void AP_MTi_G :: Get_MTi_Loc(struct Location & loc)const
+
+void AP_MTi_G :: Set_MTi_LLH(void)
 {
-    loc.alt = MTI_ins.MTI_Alt;
-    loc.lat = MTI_ins.MTI_Lat;
-    loc.lng = MTI_ins.MTI_Lon;
+    Mti_Loc.alt = (int32_t)(MTI_ins.MTI_Alt*100.f);
+    Mti_Loc.lat = MTI_ins.MTI_Lat;
+    Mti_Loc.lng = MTI_ins.MTI_Lon;
+}
+
+bool AP_MTi_G::Get_MTi_Position_NE(Vector2f &posNE)const
+{
+    const struct Location &mtiloc = Get_MTi_LLH();
+    Vector2f _posNE;
+    if(mtiloc.get_vector_xy_from_origin_NE(_posNE))
+    {
+        posNE.x = _posNE.x * 0.01f;  //米
+        posNE.y = _posNE.y * 0.01f;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool AP_MTi_G::Get_MTi_Position_D(float &posD)const
+{
+    const struct Location &mtiloc = Get_MTi_LLH();
+    float _posD;
+    if(mtiloc.get_mti_xy_from_origin_D(_posD))
+    {
+        posD = _posD * 0.01f;  //米
+        return true;
+    }
+    else
+        return false;
 }
 
 void AP_MTi_G :: printf_serial5(void)
@@ -367,6 +428,10 @@ void AP_MTi_G :: printf_serial5(void)
     }
 }
 
+void AP_MTi_G::Get_MTi_Vel(Vector3f &vel) const
+{
+    vel = MTI_ins.MTI_Velocity;  //m/s
+}
 //dcm转eulers
 void AP_MTi_G::Matrix_to_eulers(Vector3f &eulers,Matrix3f &mat)const
 {
