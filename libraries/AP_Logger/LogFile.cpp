@@ -634,7 +634,21 @@ void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
     WriteBlock(&pkt, sizeof(pkt));
 }
 
-void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f acc)
+void AP_Logger::Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc)  //记录EKF、MTI的加速度日志
+{
+    const struct log_Attitude1 pkt{
+        LOG_PACKET_HEADER_INIT(LOG_EKF_ACC_MSG),
+        time_us         : AP_HAL::micros64(),
+        ac_x            : mti_acc.x,
+        ac_y            : mti_acc.y,
+        ac_z            : mti_acc.z,
+        accel_x         : ekf_acc.x,
+        accel_y         : ekf_acc.y,
+        accel_z         : ekf_acc.z
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f &acc,struct Location&loc)
 {
     const struct MTI_Attitude pkt{
               LOG_PACKET_HEADER_INIT(LOG_ATTITUDE_MTI),
@@ -648,9 +662,34 @@ void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,c
               ac_x            : acc.x,
               ac_y            : acc.y,
               ac_z            : acc.z,
+              lat             : loc.lat,
+              lng             : loc.lng,
+              alt             : (float)(loc.alt*0.01)
     };
     WriteBlock(&pkt, sizeof(pkt));
 }
+//记录EKF、MTi的相对位置、速度日志
+void AP_Logger::Write_Pos_mti_ekf(Vector2f &ekf_posNE,float &ekf_pos_D,Vector2f &mti_posNE,float &mti_pos_D,Vector3f &M_vel,Vector3f &E_vel)
+{
+    const struct MTI_EKF_POS pkt{
+              LOG_PACKET_HEADER_INIT(LOG_POS_XYZ_MTI_EKF),
+              time_us         : AP_HAL::micros64(),
+              mti_pos_x       : mti_posNE.x,
+              mti_pos_y       : mti_posNE.y,
+              mti_pos_z       : -mti_pos_D,
+              ekf_pos_x       : ekf_posNE.x,
+              ekf_pos_y       : ekf_posNE.y,
+              ekf_pos_z       : -ekf_pos_D,
+              M_Vx            : M_vel.x,
+              M_Vy            : M_vel.y,
+              M_Vz            : M_vel.z,
+              E_Vx            : E_vel.x,
+              E_Vy            : E_vel.y,
+              E_Vz            : E_vel.z
+    };
+    WriteBlock(&pkt, sizeof(pkt));
+}
+
 void AP_Logger::Write_Current_instance(const uint64_t time_us,
                                                  const uint8_t battery_instance,
                                                  const enum LogMessages type,

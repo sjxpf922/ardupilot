@@ -43,19 +43,38 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
     EKF2(_EKF2),
     EKF3(_EKF3),
     MTi_G(_MTi_G),
-    _ekf_flags(flags)
+    _ekf_flags(flags),
+    mti_gps_valid(false),
+    last_mti_valid(false),
+    last_mti_gps_valid(false)
 {
     _dcm_matrix.identity();
 }
 
 void AP_AHRS_NavEKF::Print_mti(void)
 {
-    if(use_mti == 1)
+    if(MTi_G.get_mti_fixtype() == 3 && last_mti_gps_valid )
     {
+        mti_gps_valid = true;
+        last_mti_gps_valid = false;
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"MTI_GPS_FIX_3D");//若要替换位置数据，一定要等地面站显示MTI_GPS_FIX_3D才行
+    }
+    else if(MTi_G.get_mti_fixtype() != 3 && !last_mti_gps_valid)
+    {
+        last_mti_gps_valid = true;
+        gcs().send_text(MAV_SEVERITY_CRITICAL,"MTI_NO_GPS"); //MTI定位不佳，不适合替换位置数据部分
+    }
+    if(use_mti == 1 && !last_mti_valid)
+    {
+        last_mti_valid = true;
         gcs().send_text(MAV_SEVERITY_CRITICAL,"using_mti");
     }
-    else
+    else if(use_mti != 1 && last_mti_valid)
+    {
+        last_mti_valid = false;
         gcs().send_text(MAV_SEVERITY_CRITICAL,"using_imu");
+    }
+
 }
 // return the smoothed gyro vector corrected for drift
 const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
@@ -64,28 +83,36 @@ const Vector3f &AP_AHRS_NavEKF::get_gyro(void) const
   //      return AP_AHRS_DCM::get_gyro();
   //  }
   //  return _gyro_estimate;
-    if(use_mti == 1)
+    if (!active_EKF_type()) {
+        return MTi_gyro;   //如果ekf失效自动使用mti的角速度数据
+       // return AP_AHRS_DCM::get_gyro();
+    }
+    else if(use_mti == 1)
     {
         return MTi_gyro;
-    }
-    else if(active_EKF_type())
-    {
-        return _gyro_estimate;
+        //切换到mti的pqr
     }
     else
-        return AP_AHRS_DCM::get_gyro();
+        return _gyro_estimate;
 }
 
 const Matrix3f &AP_AHRS_NavEKF::get_rotation_body_to_ned(void) const
 {
-    if (!active_EKF_type()) {
-        return AP_AHRS_DCM::get_rotation_body_to_ned();
+   /* if (!active_EKF_type()) {
+            return AP_AHRS_DCM::get_rotation_body_to_ned();
     }
-    if(use_mti == 1)
+    return _dcm_matrix;*/
+    if (!active_EKF_type()) {
+        return mti_matrix;  //如果ekf失效自动使用mti的dcm数据
+      //  return AP_AHRS_DCM::get_rotation_body_to_ned();
+    }
+    else if(use_mti == 1)
     {
         return mti_matrix;
+        //切换到mti的dcm
     }
-    return _dcm_matrix;
+    else
+        return _dcm_matrix;
 }
 
 const Vector3f &AP_AHRS_NavEKF::get_gyro_drift(void) const
@@ -144,6 +171,7 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         // otherwise run EKF3 first
         update_EKF3();
         update_EKF2();
+        Upata_Get_MTi();//如果ekf2失效，自动运行mti
     }
 
 #if AP_MODULE_SUPPORTED
@@ -343,6 +371,8 @@ void AP_AHRS_NavEKF::Upata_Get_MTi(void)
 
     update_cd_values();
 
+    MTi_acc  = MTi_G.get_mti_acc();
+    MTi_acc_ef_ekf_blended = mti_matrix * MTi_acc;
     MTi_gyro = MTi_G.get_mti_gyr();
 }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -407,18 +437,34 @@ void AP_AHRS_NavEKF::update_SITL(void)
 const Vector3f &AP_AHRS_NavEKF::get_accel_ef(uint8_t i) const
 {
     if (active_EKF_type() == EKF_TYPE_NONE) {
-        return AP_AHRS_DCM::get_accel_ef(i);
+           return MTi_acc;
+           //如果ekf失效而且自动使用mti的加速度
+      //  return AP_AHRS_DCM::get_accel_ef(i);
     }
-    return _accel_ef_ekf[i];
+    else if(use_mti == 1 && mti_gps_valid)
+    {
+        return MTi_acc;
+        //切换到mti加速度
+    }
+    else
+        return _accel_ef_ekf[i];
 }
 
 // blended accelerometer values in the earth frame in m/s/s
 const Vector3f &AP_AHRS_NavEKF::get_accel_ef_blended(void) const
 {
     if (active_EKF_type() == EKF_TYPE_NONE) {
-        return AP_AHRS_DCM::get_accel_ef_blended();
+        return MTi_acc_ef_ekf_blended;
+        //如果ekf失效自动使用mti的加速度
+      //  return AP_AHRS_DCM::get_accel_ef_blended();
     }
-    return _accel_ef_ekf_blended;
+    else if(use_mti == 1 && mti_gps_valid)
+    {
+        return MTi_acc_ef_ekf_blended;
+        //切换到mti加速度
+    }
+    else
+        return _accel_ef_ekf_blended;
 }
 
 void AP_AHRS_NavEKF::reset(bool recover_eulers)
@@ -625,11 +671,19 @@ Vector2f AP_AHRS_NavEKF::groundspeed_vector(void)
 
     switch (active_EKF_type()) {
     case EKF_TYPE_NONE:
-        return AP_AHRS_DCM::groundspeed_vector();
+            MTi_G.Get_MTi_Vel(vec);
+            //如果板载ekf失效那么直接使用MTI的速度数据
+            return Vector2f(vec.x, vec.y);
+           // return AP_AHRS_DCM::groundspeed_vector();
 
     case EKF_TYPE2:
     default:
         EKF2.getVelNED(-1,vec);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            MTi_G.Get_MTi_Vel(vec);
+            //切换到mti的速度
+        }
         return Vector2f(vec.x, vec.y);
 
     case EKF_TYPE3:
@@ -693,11 +747,19 @@ bool AP_AHRS_NavEKF::get_velocity_NED(Vector3f &vec) const
 {
     switch (active_EKF_type()) {
     case EKF_TYPE_NONE:
-        return AP_AHRS_DCM::get_velocity_NED(vec);
+            MTi_G.Get_MTi_Vel(vec);
+            //如果板载ekf失效那么直接使用MTI的速度数据
+            return true;
+           // return AP_AHRS_DCM::get_velocity_NED(vec);
 
     case EKF_TYPE2:
     default:
         EKF2.getVelNED(-1,vec);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            MTi_G.Get_MTi_Vel(vec);
+            //切换到mti的速度
+        }
         return true;
 
     case EKF_TYPE3:
@@ -895,12 +957,21 @@ bool AP_AHRS_NavEKF::get_relative_position_NED_home(Vector3f &vec) const
 bool AP_AHRS_NavEKF::get_relative_position_NE_origin(Vector2f &posNE) const
 {
     switch (active_EKF_type()) {
-    case EKF_TYPE_NONE:
-        return false;
+    case EKF_TYPE_NONE:{
+        bool Position_is_valid = MTi_G.Get_MTi_Position_NE(posNE);
+        return Position_is_valid;
+        //如果板载ekf失效那么直接使用MTI的位置数据
+    }
+       // return false;
 
     case EKF_TYPE2:
     default: {
         bool position_is_valid = EKF2.getPosNE(-1,posNE);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            position_is_valid = MTi_G.Get_MTi_Position_NE(posNE);
+            //切换到mti的xy轴相对位置
+        }
         return position_is_valid;
     }
 
@@ -946,12 +1017,22 @@ bool AP_AHRS_NavEKF::get_relative_position_NE_home(Vector2f &posNE) const
 bool AP_AHRS_NavEKF::get_relative_position_D_origin(float &posD) const
 {
     switch (active_EKF_type()) {
-    case EKF_TYPE_NONE:
-        return false;
+    case EKF_TYPE_NONE:{
+
+        bool Position_is_valid = MTi_G.Get_MTi_Position_D(posD);
+        return Position_is_valid;
+        //如果板载ekf失效那么直接使用MTI的位置数据
+    }
+        //return false;
 
     case EKF_TYPE2:
     default: {
         bool position_is_valid = EKF2.getPosD(-1,posD);
+        if(use_mti == 1 && mti_gps_valid)
+        {
+            position_is_valid = MTi_G.Get_MTi_Position_D(posD);
+            //切换到mti的z轴相对位置
+        }
         return position_is_valid;
     }
 

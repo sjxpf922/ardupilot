@@ -286,7 +286,11 @@ private:
     //by_sjx
     AP_MTi_G &MTi_G;
     Vector3f MTi_gyro;
-
+    Vector3f MTi_acc;
+    Vector3f MTi_acc_ef_ekf_blended;
+    bool mti_gps_valid; // true->GPS_FIX_3D;false -> not GPS_FIX_3D
+    bool last_mti_gps_valid; //用来决定打印GPS显示信息的次数
+    bool last_mti_valid;
     NavEKF2 &EKF2;
     NavEKF3 &EKF3;
     bool _ekf2_started;

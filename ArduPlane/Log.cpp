@@ -10,12 +10,34 @@ void Plane::Log_Write_Attitude(void)
     targets.y = nav_pitch_cd;
 
     Vector3f eulers;
-    Mti_G.Matrix_to_eulers(eulers,Mti_G.MTI_EKF._MTI_Matrix);
+    Matrix3f mti_matrix = Mti_G.get_mti_Matrix();
+    Mti_G.Matrix_to_eulers(eulers,mti_matrix);
     Vector3f gyro;
-    Vector3f acc;
+    Vector3f MTi_acc;
+    Vector3f mti_acc_blended;
+    Location LLH;
+    Vector3f mvel;
+    Vector3f evel;
+    Matrix3f mtimatrix=Mti_G.get_mti_Matrix();
     gyro = Mti_G.get_mti_gyr();
-    acc  = Mti_G.get_mti_acc();
-    logger.Write_Attitude_mti(eulers,gyro,acc);
+    MTi_acc  = Mti_G.get_mti_acc();
+    mti_acc_blended = (mtimatrix * Mti_G.get_mti_acc());
+    LLH  = Mti_G.Get_MTi_LLH();
+    logger.Write_Attitude_mti(eulers,gyro,MTi_acc,LLH);  //记录mti的姿态角，角速度，加速度，经纬高日志
+    Vector2f ekf_pos_NE;
+    Vector2f mti_pos_NE;
+    float ekf_pos_D;
+    float mti_pos_D;
+    ahrs.get_relative_position_NE_origin(ekf_pos_NE);
+    ahrs.get_relative_position_D_origin(ekf_pos_D);
+    Mti_G.Get_MTi_Position_NE(mti_pos_NE);
+    Mti_G.Get_MTi_Position_D(mti_pos_D);
+    Mti_G.Get_MTi_Vel(mvel);
+    ahrs.get_velocity_NED(evel);
+    logger.Write_Pos_mti_ekf(ekf_pos_NE,ekf_pos_D,mti_pos_NE,mti_pos_D,mvel,evel); //记录mti和板载ekf的相对位置，速度日志
+    Vector3f EKF_acc = ahrs.get_accel_ef_blended();
+    logger.Write_EKF_Acc(EKF_acc,mti_acc_blended); //记录mti和板载加速度
+
     if (quadplane.in_vtol_mode() || quadplane.in_assisted_flight()) {
         // when VTOL active log the copter target yaw
         targets.z = wrap_360_cd(quadplane.attitude_control->get_att_target_euler_cd().z);
