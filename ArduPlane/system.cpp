@@ -126,7 +126,7 @@ void Plane::init_ardupilot()
     gps.init(serial_manager);
 
     Mti_G.init();//by_sjx
-    uart5.init();//by_sjx
+    ex_ahrs.init();//by_sjx
     init_rc_in();               // sets up rc channels from radio
 
 #if MOUNT == ENABLED

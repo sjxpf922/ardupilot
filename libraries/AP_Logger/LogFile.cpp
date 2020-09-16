@@ -634,7 +634,7 @@ void AP_Logger::Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets)
     WriteBlock(&pkt, sizeof(pkt));
 }
 
-void AP_Logger::Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc)  //记录EKF、MTI的加速度日志
+void AP_Logger::Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc,const uint8_t &fixtype,const Vector3f &eulers)  //记录EKF、MTI的加速度日志
 {
     const struct log_Attitude1 pkt{
         LOG_PACKET_HEADER_INIT(LOG_EKF_ACC_MSG),
@@ -644,10 +644,15 @@ void AP_Logger::Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc)  
         ac_z            : mti_acc.z,
         accel_x         : ekf_acc.x,
         accel_y         : ekf_acc.y,
-        accel_z         : ekf_acc.z
+        accel_z         : ekf_acc.z,
+        fixtype         : fixtype,
+        roll            : (int16_t)(degrees(eulers.x) * 100),
+        pitch           : (int16_t)(degrees(eulers.y) * 100),
+        yaw             : (uint16_t)wrap_360_cd(degrees(eulers.z) * 100)
     };
     WriteBlock(&pkt, sizeof(pkt));
 }
+
 void AP_Logger::Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f &acc,struct Location&loc)
 {
     const struct MTI_Attitude pkt{

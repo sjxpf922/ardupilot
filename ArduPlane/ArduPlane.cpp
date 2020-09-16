@@ -33,6 +33,7 @@
 const AP_Scheduler::Task Plane::scheduler_tasks[] = {
                            // Units:   Hz      us
     SCHED_TASK(ahrs_update,           400,    400),
+    SCHED_TASK(mti_ahrs_update,       200,    400),
     SCHED_TASK(read_radio,             50,    100),
     SCHED_TASK(check_short_failsafe,   50,    100),
     SCHED_TASK(update_speed_height,    50,    200),
@@ -129,6 +130,12 @@ void Plane::loop()
     G_Dt = scheduler.get_loop_period_s();
 }
 
+//update mti ahrs
+void Plane::mti_ahrs_update()
+{
+    plane.Mti_G.Read_Mti_AHRS();
+    plane.ex_ahrs.Read_Ex_AHRS();
+}
 // update AHRS system
 void Plane::ahrs_update()
 {
@@ -142,8 +149,7 @@ void Plane::ahrs_update()
 #endif
 
     ahrs.update();
-    plane.Mti_G.Read_Mti_AHRS();
-    plane.uart5.ChangeSpeed();
+   // plane.uart5.ChangeSpeed();
 
     if (should_log(MASK_LOG_IMU)) {
         logger.Write_IMU();

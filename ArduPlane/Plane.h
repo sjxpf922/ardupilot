@@ -102,7 +102,7 @@
 #include "tuning.h"
 
 //by_sjx
-#include <AP_TestUart/AP_TestUart.h>
+#include <AP_EX_AHRS/AP_EX_AHRS.h>
 #include <AP_MTi_G/AP_MTi_G.h>
 // Configuration
 #include "config.h"
@@ -338,7 +338,8 @@ private:
     ModeTakeoff mode_takeoff;
 
     AP_MTi_G Mti_G; //by_sjx
-    AP_TestUart uart5;//by_sjx
+    AP_EX_AHRS ex_ahrs;//by_sjx
+    //NavEKF2 EKF2;
     // This is the state of the flight control system
     // There are multiple states defined such as MANUAL, FBW-A, AUTO
     Mode *control_mode = &mode_initializing;
@@ -970,6 +971,7 @@ private:
     void landing_gear_update(void);
     void complete_auto_takeoff(void);
     void ahrs_update();
+    void mti_ahrs_update();
     void update_speed_height(void);
     void update_GPS_50Hz(void);
     void update_GPS_10Hz(void);

@@ -254,7 +254,7 @@ public:
     void Write_AttitudeView(AP_AHRS_View &ahrs, const Vector3f &targets);
     void Write_Attitude_mti(const Vector3f &eulers,const Vector3f &gyro,const Vector3f &acc,struct Location&loc);//by_sjx
     void Write_Pos_mti_ekf(Vector2f &ekf_posNE,float &ekf_pos_D,Vector2f &mti_posNE,float &mti_pos_D,Vector3f &M_vel,Vector3f &E_vel);
-    void Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc);
+    void Write_EKF_Acc(const Vector3f &ekf_acc,const Vector3f &mti_acc,const uint8_t &fixtype,const Vector3f &eulers);
     void Write_Current();
     void Write_Compass(uint64_t time_us=0);
     void Write_Mode(uint8_t mode, uint8_t reason);

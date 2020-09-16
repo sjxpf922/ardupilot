@@ -50,13 +50,13 @@ public:
 
     void printf_serial5(void);
     void Matrix_to_eulers(Vector3f &eulers,Matrix3f &mat)const;
+    void Eulers_to_Matrix(float &roll,float &pitch,float &yaw,Matrix3f &mat)const;
     bool Get_MTi_Position_NE(Vector2f &posNE)const;
     bool Get_MTi_Position_D(float &posD)const;
     void Set_MTi_LLH(void);
     void Get_MTi_Vel(Vector3f &vel) const{  vel = MTI_EKF._MTI_Velocity;}
 
    private:
-    uint8_t primary;   // current primary core
     uint16_t checksum;              //校验和
     uint8_t MID;                   //Message identifier
     uint8_t MessLen;              //有效数据长度

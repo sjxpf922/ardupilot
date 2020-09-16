@@ -28,16 +28,18 @@ void Plane::Log_Write_Attitude(void)
     Vector2f mti_pos_NE;
     float ekf_pos_D;
     float mti_pos_D;
-    ahrs.get_relative_position_NE_origin(ekf_pos_NE);
-    ahrs.get_relative_position_D_origin(ekf_pos_D);
+    EKF2.getPosNE(-1,ekf_pos_NE);
+    EKF2.getPosD(-1,ekf_pos_D);
     Mti_G.Get_MTi_Position_NE(mti_pos_NE);
     Mti_G.Get_MTi_Position_D(mti_pos_D);
     Mti_G.Get_MTi_Vel(mvel);
     ahrs.get_velocity_NED(evel);
     logger.Write_Pos_mti_ekf(ekf_pos_NE,ekf_pos_D,mti_pos_NE,mti_pos_D,mvel,evel); //记录mti和板载ekf的相对位置，速度日志
-    Vector3f EKF_acc = ahrs.get_accel_ef_blended();
-    logger.Write_EKF_Acc(EKF_acc,mti_acc_blended); //记录mti和板载加速度
-
+    Vector3f EKF_acc = ahrs.get_ekf_accel_ef_blended();
+    Vector3f ekf_eulers;
+    EKF2.getEulerAngles(-1,ekf_eulers);
+    uint8_t fixtype = Mti_G.get_mti_fixtype();
+    logger.Write_EKF_Acc(EKF_acc,mti_acc_blended,fixtype,ekf_eulers); //记录mti和板载加速度和gps状态值,EKF的eulers
     if (quadplane.in_vtol_mode() || quadplane.in_assisted_flight()) {
         // when VTOL active log the copter target yaw
         targets.z = wrap_360_cd(quadplane.attitude_control->get_att_target_euler_cd().z);

@@ -270,6 +270,7 @@ public:
     //by_sjx
     void Upata_Get_MTi(void);
     void Print_mti(void);
+    const Vector3f get_ekf_accel_ef_blended(void) const{return _accel_ef_ekf_blended;}
 private:
     enum EKF_TYPE {EKF_TYPE_NONE=0,
                    EKF_TYPE3=3,
@@ -291,6 +292,9 @@ private:
     bool mti_gps_valid; // true->GPS_FIX_3D;false -> not GPS_FIX_3D
     bool last_mti_gps_valid; //用来决定打印GPS显示信息的次数
     bool last_mti_valid;
+    mutable bool switch_mti_pos;
+    mutable bool Switch_mti_pos;
+    mutable bool Switch_mti_eulers;
     NavEKF2 &EKF2;
     NavEKF3 &EKF3;
     bool _ekf2_started;

@@ -65,7 +65,7 @@ void AP_MTi_G :: Mti_ReceiveData(uint8_t temp)
         if((checksum&0xff) == 0)
         {
             Mtidata_push();
-          //  printf_serial5();
+           // printf_serial5();
         }
     }
    switch(MTi.mti_state)
@@ -383,6 +383,7 @@ void AP_MTi_G:: Mtidata_push(void)
     set_mti_gyr(MTI_ins.MTI_Gyr);
     set_mti_Matrix(MTI_ins.MTI_Matrix);
     set_mti_velocity(MTI_ins.MTI_Velocity);
+    set_mti_location(MTI_ins.MTI_Lat , MTI_ins.MTI_Lon, MTI_ins.MTI_Alt);
     Set_MTi_LLH();
     set_mti_pressure(MTI_ins.MTI_pressure);
     set_mti_gps_type(MTi_gps.fixtype);
@@ -391,9 +392,9 @@ void AP_MTi_G:: Mtidata_push(void)
 /* set mti的经纬高 */
 void AP_MTi_G :: Set_MTi_LLH(void)
 {
-    Mti_Loc.alt = (int32_t)(MTI_ins.MTI_Alt*100.f);
-    Mti_Loc.lat = MTI_ins.MTI_Lat;
-    Mti_Loc.lng = MTI_ins.MTI_Lon;
+    Mti_Loc.alt = (int32_t)(MTI_EKF._MTI_Alt*100.f);
+    Mti_Loc.lat = MTI_EKF._MTI_Lat;
+    Mti_Loc.lng = MTI_EKF._MTI_Lon;
 }
 
 /* 计算mti的xy轴的相对位置 */
@@ -432,11 +433,17 @@ void AP_MTi_G :: printf_serial5(void)
     num ++;
     if(num >= 250)
     {
-        hal.uartF->printf("%f %f %f\n%f %f %f\n%f %f %f\n",MTI_ins.MTI_Matrix.a.x,MTI_ins.MTI_Matrix.a.y,MTI_ins.MTI_Matrix.a.z,MTI_ins.MTI_Matrix.b.x,MTI_ins.MTI_Matrix.b.y,MTI_ins.MTI_Matrix.b.z,MTI_ins.MTI_Matrix.c.x,MTI_ins.MTI_Matrix.c.y,MTI_ins.MTI_Matrix.c.z);
+        //hal.uartF->printf("%f %f %f\n%f %f %f\n%f %f %f\n",MTI_ins.MTI_Matrix.a.x,MTI_ins.MTI_Matrix.a.y,MTI_ins.MTI_Matrix.a.z,MTI_ins.MTI_Matrix.b.x,MTI_ins.MTI_Matrix.b.y,MTI_ins.MTI_Matrix.b.z,MTI_ins.MTI_Matrix.c.x,MTI_ins.MTI_Matrix.c.y,MTI_ins.MTI_Matrix.c.z);
+        hal.uartE->printf("%lf\n",MTI_ins.MTI_Alt);
+        hal.uartE->printf("%d\n",MTi_gps.fixtype);
         num = 0;
     }
 }
 
+void AP_MTi_G::Eulers_to_Matrix(float &roll,float &pitch,float &yaw,Matrix3f &mat)const
+{
+    mat.from_euler(roll,pitch,yaw);
+}
 //dcm转eulers
 void AP_MTi_G::Matrix_to_eulers(Vector3f &eulers,Matrix3f &mat)const
 {

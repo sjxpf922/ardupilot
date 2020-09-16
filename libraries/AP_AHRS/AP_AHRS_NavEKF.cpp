@@ -46,7 +46,9 @@ AP_AHRS_NavEKF::AP_AHRS_NavEKF(NavEKF2 &_EKF2,
     _ekf_flags(flags),
     mti_gps_valid(false),
     last_mti_valid(false),
-    last_mti_gps_valid(false)
+    last_mti_gps_valid(false),
+    switch_mti_pos(false),
+    Switch_mti_pos(false)
 {
     _dcm_matrix.identity();
 }
@@ -72,6 +74,9 @@ void AP_AHRS_NavEKF::Print_mti(void)
     else if(use_mti != 1 && last_mti_valid)
     {
         last_mti_valid = false;
+        switch_mti_pos = false;
+        Switch_mti_pos = false;
+        Switch_mti_eulers = false;
         gcs().send_text(MAV_SEVERITY_CRITICAL,"using_imu");
     }
 
@@ -165,7 +170,35 @@ void AP_AHRS_NavEKF::update(bool skip_ins_update)
         update_EKF3();
         if(use_mti == 1)
         {
-            Upata_Get_MTi();
+            static float yaw_err;
+            Vector3f eulers;
+            mti_matrix = MTi_G.get_mti_Matrix();
+            MTi_G.Matrix_to_eulers(eulers,mti_matrix);
+            roll  = eulers.x;
+            pitch = eulers.y;
+            if(!Switch_mti_eulers)
+            {
+                //切换时 只求一次切换瞬间的差值
+                yaw_err = eulers.z - yaw;
+                Switch_mti_eulers = true;
+            }
+            yaw = eulers.z - yaw_err;
+            if(yaw < -M_PI)
+            {
+               yaw +=  2 * M_PI;
+            }
+            else if(yaw > M_PI)
+            {
+                yaw -= 2 * M_PI;
+            }
+            //对yaw处理后，重新构造mti_matrix
+            MTi_G.Eulers_to_Matrix(roll,pitch,yaw,mti_matrix);
+            update_cd_values();
+
+            MTi_acc  = MTi_G.get_mti_acc();
+            MTi_acc_ef_ekf_blended = mti_matrix * MTi_acc;
+            MTi_gyro = MTi_G.get_mti_gyr();
+           // Upata_Get_MTi();
         }
     } else {
         // otherwise run EKF3 first
@@ -966,10 +999,19 @@ bool AP_AHRS_NavEKF::get_relative_position_NE_origin(Vector2f &posNE) const
 
     case EKF_TYPE2:
     default: {
+        Vector2f posNE_mti;
+        static Vector2f posNE_err;
         bool position_is_valid = EKF2.getPosNE(-1,posNE);
         if(use_mti == 1 && mti_gps_valid)
         {
-            position_is_valid = MTi_G.Get_MTi_Position_NE(posNE);
+            position_is_valid = MTi_G.Get_MTi_Position_NE(posNE_mti);//计算当前MTI的水平位置
+            if(!Switch_mti_pos)
+            {
+                gcs().send_text(MAV_SEVERITY_INFO,"a");
+                posNE_err = posNE_mti - posNE;//MTI与EKF的水平位置差值
+                Switch_mti_pos = true;
+            }
+            posNE = posNE_mti - posNE_err;
             //切换到mti的xy轴相对位置
         }
         return position_is_valid;
@@ -1027,11 +1069,20 @@ bool AP_AHRS_NavEKF::get_relative_position_D_origin(float &posD) const
 
     case EKF_TYPE2:
     default: {
+        float posD_mti;
+        static float posD_err;
         bool position_is_valid = EKF2.getPosD(-1,posD);
         if(use_mti == 1 && mti_gps_valid)
         {
-            position_is_valid = MTi_G.Get_MTi_Position_D(posD);
-            //切换到mti的z轴相对位置
+            position_is_valid = MTi_G.Get_MTi_Position_D(posD_mti);//计算当前MTI的水平位置
+            if(!switch_mti_pos)
+            {
+                gcs().send_text(MAV_SEVERITY_INFO,"b");
+                posD_err = posD_mti - posD;//取得mti与ekf切换瞬间的高度差值
+                switch_mti_pos = true;     //将标志位置true，保证差值只求一次
+            }
+            posD = posD_mti - posD_err;//将MTI的高度都减去这个差值。
+            //切换到mti的高度
         }
         return position_is_valid;
     }
